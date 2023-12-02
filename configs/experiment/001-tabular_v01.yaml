@@ -3,9 +3,11 @@
 # to execute this experiment run:
 # python train.py experiment=example
 
-# defaults:
-#   -
+defaults:
+  - override /cv: stratified_kfold
+
 # all parameters below will be merged with parameters from default configurations set above
 # this allows you to overwrite only specified parameters
 
 experiment_name: ${hydra:job.override_dirname}
+notebook: tabular_v01
