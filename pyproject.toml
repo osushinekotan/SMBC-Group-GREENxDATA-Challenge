@@ -11,6 +11,8 @@ dependencies = [
     "pandas>=2.0.3",
     "sweetviz>=2.3.1",
     "setuptools>=69.0.2",
+    "torch>=2.1.1",
+    "sentence-transformers>=2.2.2",
 ]
 readme = "README.md"
 requires-python = ">= 3.8"
