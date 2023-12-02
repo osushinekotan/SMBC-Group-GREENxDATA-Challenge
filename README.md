@@ -1,5 +1,11 @@
 # smbc-group-greenxdata-challenge
 
+## Env
+```
+cp .env.example .env
+echo 'export $(cat .env | grep -v ^#)' >> ~/.bashrc
+```
+
 ## Rye
 ```
 curl -sSf https://rye-up.com/get | bash
