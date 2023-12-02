@@ -1,0 +1,11 @@
+# path to root directory
+root_dir: ${oc.env:HOME}/llm-detect-ai-generated-text
+
+# path to resources directory
+resource_dir: ${paths.root_dir}/resources
+notebooks_dir: ${paths.root_dir}/notebooks
+input_dir: ${paths.resource_dir}/inputs
+output_dir: ${paths.resource_dir}/outputs/${hydra:job.override_dirname}
+misc_dir: ${paths.resource_dir}/misc
+
+submission_dir: ${paths.output_dir}
