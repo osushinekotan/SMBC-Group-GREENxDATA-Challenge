@@ -1,6 +1,7 @@
 # type: ignore
 import re
 
+import numpy as np
 import pandas as pd
 from sentence_transformers import SentenceTransformer
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -104,11 +105,11 @@ This information was collected by a {user_type} from the local area of {zip_city
         return [f"column_embedding_v01_{i:03}" for i in range(self.model.get_sentence_embedding_dimension())]
 
     def fit(self, X, y=None):
-        output_df = pd.DataFrame({"prompt": self.make_prompts(X)})
-        embeddings = self.model.encode(output_df["prompt"].tolist(), show_progress_bar=True, batch_size=self.batch_size)
+        prompt = np.unique(self.make_prompts(X))
+        embeddings = self.model.encode(prompt.tolist(), show_progress_bar=True, batch_size=self.batch_size)
         self.embeddings_df = pd.DataFrame(
             embeddings, columns=[f"column_embedding_v01_{i:03}" for i in range(embeddings.shape[1])]
-        ).assign(prompt=output_df["prompt"].tolist())
+        ).assign(prompt=prompt)
         return self
 
     def transform(self, X, y=None):
