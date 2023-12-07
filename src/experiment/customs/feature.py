@@ -230,15 +230,3 @@ class OrdinalTransformer(BaseEstimator, TransformerMixin):
     def transform(self, X, y=None):
         output_df = self.oe.transform(X[self.cols].astype(str)).add_prefix("oe_")
         return output_df[self.feature_names]
-
-
-class DummyTransformer(BaseEstimator, TransformerMixin):
-    def __init__(self, dummy=None) -> None:
-        self.dummy = dummy
-
-    def fit(self, X, y=None):
-        return self
-
-    def transform(self, X, y=None):
-        self.feature_names = X.columns.tolist()
-        return X
