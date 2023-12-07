@@ -22,6 +22,8 @@ def replace_other(s: str) -> str:
 
 
 class ColumnsEmbedderV01(BaseEstimator, TransformerMixin):
+    """must use train and test concatenated data"""
+
     def __init__(
         self,
         model_name: str,
@@ -95,12 +97,22 @@ This information was collected by a {user_type} from the local area of {zip_city
             output_df[col] = source_df[col].astype(str)
 
         output_df["prompt"] = output_df.apply(lambda x: self.prompt.format(**x), axis=1)
-        return output_df["prompt"].unique().tolist()
+        return output_df["prompt"].tolist()
+
+    @property
+    def feature_names(self) -> list[str]:
+        return [f"column_embedding_v01_{i:03}" for i in range(self.model.get_sentence_embedding_dimension())]
 
     def fit(self, X, y=None):
+        output_df = pd.DataFrame({"prompt": self.make_prompts(X)})
+        embeddings = self.model.encode(output_df["prompt"].tolist(), show_progress_bar=True, batch_size=self.batch_size)
+        self.embeddings_df = pd.DataFrame(
+            embeddings, columns=[f"column_embedding_v01_{i:03}" for i in range(embeddings.shape[1])]
+        ).assign(prompt=output_df["prompt"].tolist())
         return self
 
     def transform(self, X, y=None):
-        prompts = self.make_prompts(X)
-        embeddings = self.model.encode(prompts, show_progress_bar=True, batch_size=self.batch_size)
-        return {k: v for k, v in zip(prompts, embeddings)}
+        output_df = pd.DataFrame({"prompt": self.make_prompts(X)})
+        output_df = pd.merge(output_df, self.embeddings_df, on="prompt", how="left")
+        output_df = output_df.drop(columns=["prompt"])
+        return output_df[self.feature_names]

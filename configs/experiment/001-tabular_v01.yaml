@@ -42,6 +42,12 @@ pipeline:
             - _target_: src.experiment.customs.feature.OrdinalTransformer
               cols:
                 [spc_common, spc_latin, cncldist, boro_ct, boroname, zip_city]
+          - - column_embedding
+            - _target_: src.experiment.customs.embedding.ColumnsEmbedderV01
+              model_name: microsoft/deberta-v3-base
+              max_seq_length: 256
+              batch_size: 32
+
     - - final
       - _target_: src.experiment.customs.feature.DummyTransformer
   memory: ${paths.output_dir}
