@@ -20,33 +20,54 @@ pipeline:
         n_jobs: -1
         transformer_list:
           - - created_at
-            - _target_: src.experiment.customs.feature.CreatedAtTransformerV01
+            - _target_: sklearn.pipeline.Pipeline
+              steps:
+                - - component
+                  - _target_: src.experiment.customs.feature.CreatedAtTransformerV01
+                - - dummy
+                  - null
+              memory: ${paths.output_dir}
+
           - - curb_loc
-            - _target_: src.experiment.customs.feature.CurbLocationTransformerV01
+            - _target_: sklearn.pipeline.Pipeline
+              steps:
+                - - component
+                  - _target_: src.experiment.customs.feature.CurbLocationTransformerV01
+                - - dummy
+                  - null
+              memory: ${paths.output_dir}
+
           - - steward
-            - _target_: src.experiment.customs.feature.StreetWidthTransformerV01
-          - - guards
-            - _target_: src.experiment.customs.feature.GuardsTransformerV01
-          - - sidewalk
-            - _target_: src.experiment.customs.feature.SidewalkTransformerV01
-          - - user_type
-            - _target_: src.experiment.customs.feature.UserTypeTransformerV01
-          - - problems
-            - _target_: src.experiment.customs.feature.ProblemsTransformerV01
-          - - nta
-            - _target_: src.experiment.customs.feature.NtaTransformerV01
-          - - raw
-            - _target_: src.experiment.customs.feature.RawTransformer
-              cols: [tree_dbh, cb_num, st_senate, st_assem, cncldist, borocode]
-          - - ordinal
-            - _target_: src.experiment.customs.feature.OrdinalTransformer
-              cols:
-                [spc_common, spc_latin, cncldist, boro_ct, boroname, zip_city]
-          - - column_embedding
-            - _target_: src.experiment.customs.embedding.ColumnsEmbedderV01
-              model_name: microsoft/deberta-v3-base
-              max_seq_length: 256
-              batch_size: 32
+            - _target_: sklearn.pipeline.Pipeline
+              steps:
+                - - component
+                  - _target_: src.experiment.customs.feature.StreetWidthTransformerV01
+                - - dummy
+                  - null
+              memory: ${paths.output_dir}
+
+        # - - guards
+        #   - _target_: src.experiment.customs.feature.GuardsTransformerV01
+        # - - sidewalk
+        #   - _target_: src.experiment.customs.feature.SidewalkTransformerV01
+        # - - user_type
+        #   - _target_: src.experiment.customs.feature.UserTypeTransformerV01
+        # - - problems
+        #   - _target_: src.experiment.customs.feature.ProblemsTransformerV01
+        # - - nta
+        #   - _target_: src.experiment.customs.feature.NtaTransformerV01
+        # - - raw
+        #   - _target_: src.experiment.customs.feature.RawTransformer
+        #     cols: [tree_dbh, cb_num, st_senate, st_assem, cncldist, borocode]
+        # - - ordinal
+        #   - _target_: src.experiment.customs.feature.OrdinalTransformer
+        #     cols:
+        #       [spc_common, spc_latin, cncldist, boro_ct, boroname, zip_city]
+        # - - column_embedding
+        #   - _target_: src.experiment.customs.embedding.ColumnsEmbedderV01
+        #     model_name: microsoft/deberta-v3-base
+        #     max_seq_length: 256
+        #     batch_size: 32
 
     - - final
       - _target_: src.experiment.customs.feature.DummyTransformer
