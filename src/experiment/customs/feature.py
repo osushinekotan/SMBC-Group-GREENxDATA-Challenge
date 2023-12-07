@@ -166,11 +166,9 @@ class ProblemsTransformerV01(BaseEstimator, TransformerMixin):
 
     def transform(self, X, y=None):
         features_num_problems_df = pd.DataFrame(
-            [self.make_num_problems(X[self.col].fillna("nan"))],
-            columns=self.feature_names[0],
+            {self.feature_names[0]: self.make_num_problems(X[self.col].fillna("nan"))}
         )
         features_problems_onehot_df = self.make_problems_onehot(X)[self.feature_names[1:]]
-
         output_df = pd.concat([features_num_problems_df, features_problems_onehot_df], axis=1)
         return output_df
 
