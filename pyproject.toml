@@ -18,6 +18,7 @@ dependencies = [
     "rootutils>=1.0.7",
     "lightgbm>=4.1.0",
     "xgboost>=2.0.2",
+    "seaborn>=0.13.0",
 ]
 readme = "README.md"
 requires-python = ">= 3.8"
