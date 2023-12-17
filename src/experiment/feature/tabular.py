@@ -62,3 +62,60 @@ class AggregatedFeatureExtractor(BaseFeatureExtractor):
             return new_df.drop(columns=self.group_values + self.group_keys)
 
         return new_df.drop(columns=self.group_keys)
+
+
+class TargetEncoder(BaseFeatureExtractor):
+    def __init__(
+        self,
+        group_keys: list[str],
+        target_value: str,
+        agg_methods: list[str | Callable],
+        fold: str = "fold",
+        parents: list[BaseFeatureExtractor] | None = None,
+    ):
+        super().__init__(parents)
+        self.parents = parents
+        self.group_keys = group_keys
+        self.target_value = target_value
+        self.agg_methods = agg_methods
+        self.fold = fold
+        self.encodings = {}  # type: ignore
+
+        self.group_keys_str = "_".join(self.group_keys)
+
+    def fit(self, input_df: pd.DataFrame) -> None:  # type: ignore
+        # 各フォールドでの集約
+        for fold_val in input_df[self.fold].unique():
+            if fold_val < 0:
+                continue
+            other_folds_df = input_df[input_df[self.fold] != fold_val]
+            self.encodings[fold_val] = self._calculate_fold_encodings(other_folds_df)
+
+        # 全体の集約（テストデータ用）
+        self.encodings["overall"] = self._calculate_fold_encodings(input_df)
+
+    def _calculate_fold_encodings(self, df: pd.DataFrame) -> pd.DataFrame:
+        agg_df = df.groupby(self.group_keys).agg({self.target_value: self.agg_methods})
+        agg_df.columns = [f"te_{method}_{self.target_value}_grpby_{self.group_keys_str}" for method in self.agg_methods]
+        return agg_df.reset_index()
+
+    def transform(self, input_df: pd.DataFrame) -> pd.DataFrame:  # type: ignore
+        encoded_columns = []
+
+        for fold_val, encodings in self.encodings.items():
+            # フォールドごとのデータを抽出
+            if fold_val != "overall":
+                fold_df = input_df[input_df[self.fold] == fold_val]
+            else:
+                fold_df = input_df[input_df[self.fold].isna() | (input_df[self.fold] < 0)]
+
+            encoded_df = fold_df[self.group_keys].merge(encodings, on=self.group_keys, how="left")
+            encoded_df = encoded_df.drop(columns=self.group_keys)
+
+            # インデックスと結合して追加
+            encoded_df.index = fold_df.index
+            encoded_columns.append(encoded_df)
+
+        # 全てのエンコードされたデータフレームを結合
+        output_df = pd.concat(encoded_columns).sort_index()
+        return output_df
