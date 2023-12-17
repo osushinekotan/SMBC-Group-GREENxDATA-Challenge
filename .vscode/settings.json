@@ -8,8 +8,8 @@
       "editor.formatOnSaveMode": "file",
       "editor.formatOnSave": true,
       "editor.codeActionsOnSave": {
-        "source.fixAll.ruff": true,
-        "source.organizeImports.ruff": true
+        "source.fixAll.ruff": "explicit",
+        "source.organizeImports.ruff": "explicit"
       }
     },
   
@@ -26,6 +26,11 @@
       "editor.formatOnSave": true,
       "editor.codeActionsOnSave": {
         "source.fixAll": true
+      }
+    },
+    "[json][jsonc][yaml]": {
+      "editor.codeActionsOnSave": {
+        "source.fixAll": "explicit"
       }
     }
   }
