@@ -1,3 +1,6 @@
+import hashlib
+import json
+
 import pandas as pd
 from sklearn.model_selection import BaseCrossValidator
 
@@ -18,3 +21,8 @@ def assign_fold_index(
     for fold_index, (_, valid_index) in enumerate(strategy):
         train_df.loc[valid_index, "fold"] = fold_index
     return train_df
+
+
+def make_uid(source_dict: dict) -> str:
+    dict_str = json.dumps(source_dict, sort_keys=True)
+    return hashlib.sha256(dict_str.encode()).hexdigest()
