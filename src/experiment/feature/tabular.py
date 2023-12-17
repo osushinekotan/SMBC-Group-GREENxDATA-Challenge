@@ -54,10 +54,11 @@ class AggregatedFeatureExtractor(BaseFeatureExtractor):
 
     def transform(self, input_df: pd.DataFrame) -> pd.DataFrame:  # type: ignore
         # 集約データフレームを入力データフレームに結合
-        new_df = input_df.merge(self.df_agg, how="left", on=self.group_keys)
+        new_df = input_df[self.group_keys + self.group_values].merge(self.df_agg, how="left", on=self.group_keys)
 
         # 追加集約方法の計算
         if "z-score" in self.extr_agg_methods:
             new_df = self.calculate_z_scores(new_df)
+            return new_df.drop(columns=self.group_values + self.group_keys)
 
-        return new_df
+        return new_df.drop(columns=self.group_keys)
