@@ -29,6 +29,7 @@ def run_extractor(
             extractors=extractor.parents,  # type: ignore
             dirpath=dirpath,
             fit=fit,
+            prefix="",  # parent は prefix なし
         )
         tmp_df = pd.concat([input_df, parent_df], axis=1)
     else:
