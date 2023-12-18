@@ -10,4 +10,4 @@ defaults:
 # this allows you to overwrite only specified parameters
 
 experiment_name: ${hydra:job.override_dirname}
-notebook: tabular_v01
+notebook: tabular_v1
