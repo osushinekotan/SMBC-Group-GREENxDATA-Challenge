@@ -1,0 +1,127 @@
+# @package _global_
+
+# to execute this experiment run:
+# python train.py experiment=example
+
+defaults:
+  - override /cv: stratified_kfold
+
+# all parameters below will be merged with parameters from default configurations set above
+# this allows you to overwrite only specified parameters
+
+experiment_name: ${hydra:job.override_dirname}
+notebook: tabular_v2
+
+feature_store: "001"
+
+feature_extractors:
+  - _target_: src.experiment.customs.feature.CreatedAtFeatureExtractorV1
+  - _target_: src.experiment.customs.feature.CurbLocationFeatureExtractorV1
+  - _target_: src.experiment.customs.feature.StreetWidthFeatureExtractorV1
+  - _target_: src.experiment.customs.feature.GuardsFeatureExtractorV1
+  - _target_: src.experiment.customs.feature.SidewalkFeatureExtractorV1
+  - _target_: src.experiment.customs.feature.UserTypeFeatureExtractorV1
+  - _target_: src.experiment.customs.feature.ProblemsFeatureExtractorV1
+  - _target_: src.experiment.customs.feature.NtaFeatureExtractorV1
+  - _target_: src.experiment.customs.feature.RawTransformer
+    cols:
+      ["tree_dbh", "cb_num", "st_senate", "st_assem", "cncldist", "borocode"]
+  - _target_: src.experiment.customs.feature.OrdinalFeatureExtractor
+    cols:
+      ["spc_common", "spc_latin", "cncldist", "boro_ct", "boroname", "zip_city"]
+
+agg_feature_extractors:
+  - _target_: src.experiment.feature.tabular.AggregatedFeatureExtractor
+    group_keys: null # set in notebook
+    group_values: ["tree_dbh"]
+    agg_methods: ["min", "max", "std", "mean", "median"]
+    extr_agg_methods: ["z-score"]
+    parents:
+      - _target_: src.experiment.customs.feature.CreatedAtFeatureExtractorV1
+
+te_feature_extractors:
+  - _target_: src.experiment.feature.tabular.TargetEncoder
+    group_keys: null # set in notebook
+    target_value: health
+    agg_methods: ["std", "mean"]
+    parents:
+      - _target_: src.experiment.customs.feature.CreatedAtFeatureExtractorV1
+      - _target_: src.experiment.customs.feature.TreeDbhFeatureExtractorV1
+
+group_keys_for_agg:
+  - ["sidewalk"]
+  - ["zip_city"]
+  - ["curb_loc"]
+  - ["steward"]
+  - ["guards"]
+  - ["user_type"]
+  - ["nta"]
+  - ["cb_num"]
+  - ["boroname"]
+  - ["st_senate"]
+  - ["st_assem"]
+  - ["cncldist"]
+  - ["spc_common"]
+  - ["steward", "sidewalk"]
+  - ["steward", "zip_city"]
+  - ["steward", "guards"]
+  - ["steward", "user_type"]
+  - ["steward", "nta"]
+  - ["steward", "cb_num"]
+  - ["steward", "boroname"]
+  - ["steward", "st_senate"]
+  - ["steward", "st_assem"]
+  - ["steward", "cncldist"]
+  - ["steward", "curb_loc"]
+  - ["spc_common", "sidewalk"]
+  - ["spc_common", "zip_city"]
+  - ["spc_common", "steward"]
+  - ["spc_common", "guards"]
+  - ["spc_common", "user_type"]
+  - ["spc_common", "nta"]
+  - ["spc_common", "cb_num"]
+  - ["spc_common", "boroname"]
+  - ["spc_common", "st_senate"]
+  - ["spc_common", "st_assem"]
+  - ["spc_common", "cncldist"]
+  - ["spc_common", "curb_loc"]
+
+group_keys_for_te:
+  - ["tree_dbh_bins10"]
+  - ["tree_dbh_01"]
+  - ["sidewalk"]
+  - ["zip_city"]
+  - ["curb_loc"]
+  - ["steward"]
+  - ["guards"]
+  - ["user_type"]
+  - ["nta"]
+  - ["cb_num"]
+  - ["boroname"]
+  - ["st_senate"]
+  - ["st_assem"]
+  - ["cncldist"]
+  - ["spc_common"]
+  - ["steward", "sidewalk"]
+  - ["steward", "zip_city"]
+  - ["steward", "guards"]
+  - ["steward", "user_type"]
+  - ["steward", "nta"]
+  - ["steward", "cb_num"]
+  - ["steward", "boroname"]
+  - ["steward", "st_senate"]
+  - ["steward", "st_assem"]
+  - ["steward", "cncldist"]
+  - ["steward", "curb_loc"]
+  - ["spc_common", "sidewalk"]
+  - ["spc_common", "zip_city"]
+  - ["spc_common", "steward"]
+  - ["spc_common", "guards"]
+  - ["spc_common", "user_type"]
+  - ["spc_common", "nta"]
+  - ["spc_common", "cb_num"]
+  - ["spc_common", "boroname"]
+  - ["spc_common", "st_senate"]
+  - ["spc_common", "st_assem"]
+  - ["spc_common", "cncldist"]
+  - ["spc_common", "curb_loc"]

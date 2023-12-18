@@ -26,7 +26,7 @@ def run_extractor(
     if exist_parents:
         parent_df = run_extractors(
             input_df=input_df,
-            extractors=extractor.parents,  # type: ignore
+            extractors=list(extractor.parents),  # type: ignore
             dirpath=dirpath,
             fit=fit,
             prefix="",  # parent は prefix なし
@@ -36,7 +36,7 @@ def run_extractor(
         tmp_df = input_df
 
     name = f"{extractor.__class__.__name__}_{extractor.uid}"
-    parent_dir = dirpath / f"{extractor.__class__.__name__}_{extractor.uid}"
+    parent_dir = dirpath / name
     logger.info(f"<{name}>")
 
     parent_dir.mkdir(parents=True, exist_ok=True)
@@ -72,7 +72,7 @@ def run_extractors(
     prefix: str = "f_",
 ) -> pd.DataFrame:
     output_df = pd.concat(
-        [run_extractor(input_df, extractor, dirpath, fit, cache) for extractor in extractors],
+        [run_extractor(input_df, extractor, dirpath, fit, cache) for extractor in list(extractors)],
         axis=1,
     ).reset_index(drop=True)
 

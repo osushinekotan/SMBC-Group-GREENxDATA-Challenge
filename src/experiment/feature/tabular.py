@@ -18,10 +18,10 @@ class AggregatedFeatureExtractor(BaseFeatureExtractor):
         super().__init__(parents)
         self.parents = parents
 
-        self.group_keys = group_keys
-        self.group_values = group_values
-        self.agg_methods = agg_methods
-        self.extr_agg_methods = extr_agg_methods
+        self.group_keys = list(group_keys)
+        self.group_values = list(group_values)
+        self.agg_methods = list(agg_methods)
+        self.extr_agg_methods = list(extr_agg_methods)
 
         if "z-score" in self.extr_agg_methods:
             if "mean" not in self.agg_methods:
@@ -61,7 +61,8 @@ class AggregatedFeatureExtractor(BaseFeatureExtractor):
             new_df = self.calculate_z_scores(new_df)
             return new_df.drop(columns=self.group_values + self.group_keys)
 
-        return new_df.drop(columns=self.group_keys)
+        new_df = new_df.drop(columns=self.group_keys)
+        return new_df
 
 
 class TargetEncoder(BaseFeatureExtractor):
@@ -75,9 +76,9 @@ class TargetEncoder(BaseFeatureExtractor):
     ):
         super().__init__(parents)
         self.parents = parents
-        self.group_keys = group_keys
+        self.group_keys = list(group_keys)
         self.target_value = target_value
-        self.agg_methods = agg_methods
+        self.agg_methods = list(agg_methods)
         self.fold = fold
         self.encodings = {}  # type: ignore
 

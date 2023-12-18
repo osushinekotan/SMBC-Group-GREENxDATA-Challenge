@@ -10,9 +10,20 @@ import pandas as pd
 
 class CustomEncoder(json.JSONEncoder):
     def default(self, obj: Any) -> Any:
+        # 除外する属性のリスト
+        exclude_attrs = ["parents"]
+
         if hasattr(obj, "__dict__"):
-            exclude_attrs = ["parents"]
-            data = {k: v for k, v in obj.__dict__.items() if k not in exclude_attrs}
+            # 除外リストに含まれていない属性のみを辞書に含める
+            data = {}
+            for key, value in obj.__dict__.items():
+                if key not in exclude_attrs:
+                    # さらなるネストされたオブジェクトを処理する
+                    try:
+                        json.dumps(value)  # 値が JSON シリアライズ可能かテストする
+                        data[key] = value
+                    except TypeError:
+                        data[key] = str(value)  # シリアライズできない場合は文字列として扱う
             return data
 
         return json.JSONEncoder.default(self, obj)
