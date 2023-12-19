@@ -2,9 +2,11 @@ import hashlib
 import json
 
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import seaborn as sns
 from matplotlib.figure import Figure
+from sklearn.metrics import confusion_matrix
 from sklearn.model_selection import BaseCrossValidator
 
 
@@ -81,3 +83,50 @@ def visualize_feature_importance(
     ax.grid()
     fig.tight_layout()
     return fig, feature_importance_df
+
+
+def plot_confusion_matrix(y_true: np.ndarray, y_pred: np.ndarray, normalize: bool = False) -> Figure:
+    """
+    This function computes and returns a confusion matrix as a matplotlib figure.
+    :param y_true: Array of true labels
+    :param y_pred: Array of predicted labels
+    :param normalize: Boolean, whether to normalize the confusion matrix or not
+    :return: Matplotlib figure object containing the confusion matrix plot
+    """
+    cm = confusion_matrix(y_true, y_pred)
+
+    if normalize:
+        cm = cm.astype("float") / cm.sum(axis=1)[:, np.newaxis]
+
+    fig, ax = plt.subplots(figsize=(10, 8))
+    sns.heatmap(cm, annot=True, fmt=".2f" if normalize else "d", cmap="Blues", ax=ax)
+    ax.set_ylabel("True label")
+    ax.set_xlabel("Predicted label")
+    ax.set_title("Confusion Matrix" + (" (Normalized)" if normalize else ""))
+
+    return fig
+
+
+def plot_label_distributions(proba_matrix: np.ndarray) -> Figure:
+    """
+    Plots the distribution of probabilities for each label in the given matrix and returns the figure.
+
+    Parameters:
+    proba_matrix (numpy.ndarray): A matrix of shape (n, num_labels) containing probabilities.
+
+    Returns:
+    matplotlib.figure.Figure: The figure object containing the plots.
+    """
+    num_labels = proba_matrix.shape[1]
+    fig, ax = plt.subplots()
+
+    # Create a distribution plot for each label
+    for i in range(num_labels):
+        sns.kdeplot(proba_matrix[:, i], ax=ax, fill=True, label=f"Label {i+1}")
+
+    ax.set_title("Probability Distributions for Each Label")
+    ax.set_xlabel("Probability")
+    ax.set_ylabel("Density")
+    ax.legend()
+
+    return fig
