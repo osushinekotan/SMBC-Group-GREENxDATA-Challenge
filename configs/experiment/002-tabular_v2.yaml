@@ -125,3 +125,26 @@ group_keys_for_te:
   - ["spc_common", "st_assem"]
   - ["spc_common", "cncldist"]
   - ["spc_common", "curb_loc"]
+
+model:
+  estimator:
+    _target_: lightgbm.LGBMModel
+    # https://lightgbm.readthedocs.io/en/latest/pythonapi/lightgbm.LGBMModel.html#lightgbm.LGBMModel
+    n_estimators": 10000
+    num_leaves": 11
+    learning_rate": 0.01
+    objective": "multiclass"
+    colsample_bytree": 0.2
+    subsample": 0.2
+    random_state": 8823
+    class_weight": "balanced"
+    importance_type": "gain"
+    num_class": 3
+  fit_params:
+    callbacks:
+      - _target_: lightgbm.callback._EarlyStoppingCallback
+        stopping_rounds: 100
+        verbose: true
+        first_metric_only: false
+      - _target_: lightgbm.callback._LogEvaluationCallback
+        period: 100
