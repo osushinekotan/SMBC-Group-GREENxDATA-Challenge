@@ -23,6 +23,8 @@ class CreatedAtFeatureExtractorV1(BaseFeatureExtractor):
             created_at__month=ts.dt.month,
             created_at__day=ts.dt.day,
         )
+        output_df["tree_age"] = 2023 - output_df["created_at__year"]
+        output_df["tree_age_bins10"] = pd.cut(output_df["tree_age"], bins=10, labels=False)
 
         return output_df
 
@@ -87,6 +89,7 @@ class UserTypeFeatureExtractorV1(BaseFeatureExtractor):
 
 
 class ProblemsFeatureExtractorV1(BaseFeatureExtractor):
+    # must concat train and test
     def make_num_problems_df(self, problems: pd.Series | list[str]) -> list:
         num_problems = [len(re.split("(?=[A-Z])", problem)[1:]) if problem != "nan" else np.nan for problem in problems]
         return pd.DataFrame({"num_problems": num_problems})
@@ -106,6 +109,27 @@ class ProblemsFeatureExtractorV1(BaseFeatureExtractor):
         features_num_problems_df = self.make_num_problems_df(input_df["problems"].fillna("nan"))
         features_problems_onehot_df = self.make_problems_onehot_df(input_df)
         output_df = pd.concat([features_num_problems_df, features_problems_onehot_df], axis=1)
+        return output_df
+
+
+class FirstProblemOrdinalFeatureExtractorV1(BaseFeatureExtractor):
+    def __init__(self, parents: list[BaseFeatureExtractor] | None = None):
+        super().__init__(parents)
+        self.oe = ce.OrdinalEncoder()
+
+    def make_first_problem_df(self, problems: pd.Series | list[str]) -> pd.DataFrame:
+        df = pd.DataFrame()
+        df["first_problem"] = pd.Series(problems).fillna("Nan").apply(lambda x: re.split("(?=[A-Z])", x)[1])
+        return df
+
+    def fit(self, input_df):
+        df = self.make_first_problem_df(input_df["problems"])
+        self.oe.fit(df[["first_problem"]])
+        return self
+
+    def transform(self, input_df: pd.DataFrame, **kwargs) -> pd.DataFrame:
+        df = self.make_first_problem_df(input_df["problems"])
+        output_df = self.oe.transform(df[["first_problem"]]).add_prefix("oe_")
         return output_df
 
 

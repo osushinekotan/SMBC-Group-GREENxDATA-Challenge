@@ -1,5 +1,7 @@
+from itertools import combinations
 from typing import Callable
 
+import category_encoders as ce
 import numpy as np
 import pandas as pd
 
@@ -119,4 +121,63 @@ class TargetEncoder(BaseFeatureExtractor):
 
         # 全てのエンコードされたデータフレームを結合
         output_df = pd.concat(encoded_columns).sort_index()
+        return output_df
+
+
+class ConcatCombinationOrdinalEncoder(BaseFeatureExtractor):
+    """Generate combination of string columns. (xfeat style)"""
+
+    def __init__(
+        self,
+        input_cols: list[str] | None = None,
+        include_cols: list[str] | None = None,
+        output_prefix: str = "",
+        output_suffix: str = "_combi",
+        fillna: str = "_NaN_",
+        r: int = 2,
+        parents: list[BaseFeatureExtractor] | None = None,
+    ):
+        super().__init__(parents)
+        self.parents = parents
+        self._input_cols = input_cols or []
+        self._include_cols = include_cols or []
+        self._output_prefix = output_prefix
+        self._output_suffix = output_suffix
+        self._r = r
+        self._fillna = fillna
+
+        self.oe = ce.OrdinalEncoder()
+
+    def make_categorical_feature_df(self, input_df: pd.DataFrame) -> pd.DataFrame:  # type: ignore
+        cols = []
+
+        n_fixed_cols = len(self._include_cols)
+        df = input_df.copy()
+
+        for cols_pairs in combinations(self._input_cols, r=self._r - n_fixed_cols):
+            fixed_cols_str = "".join(self._include_cols)
+            pairs_cols_str = "".join(cols_pairs)
+            new_col = self._output_prefix + fixed_cols_str + pairs_cols_str + self._output_suffix
+            cols.append(new_col)
+
+            concat_cols = self._include_cols + list(cols_pairs)
+            new_ser = None
+            for col in concat_cols:
+                if new_ser is None:
+                    new_ser = df[col].fillna(self._fillna).astype(str).copy()
+                else:
+                    new_ser = new_ser + df[col].fillna(self._fillna).astype(str)  # type: ignore
+
+            df[new_col] = new_ser
+
+        return df[cols]
+
+    def fit(self, input_df: pd.DataFrame, **kwargs):  # type: ignore
+        df = self.make_categorical_feature_df(input_df)
+        self.oe.fit(df)
+        return self
+
+    def transform(self, input_df: pd.DataFrame, **kwargs) -> pd.DataFrame:  # type: ignore
+        df = self.make_categorical_feature_df(input_df)
+        output_df = self.oe.transform(df).add_prefix("oe_")
         return output_df

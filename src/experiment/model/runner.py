@@ -82,6 +82,7 @@ def predict_cv_tabular_v1(
     train_folds: list[int] | None = None,
     test: bool = False,
     result_columns: list[str] | None = None,
+    predict_proba: bool = True,
 ) -> pd.DataFrame:
     if result_columns is None:
         result_columns = [col for col in df.columns if col not in feature_columns]
@@ -95,7 +96,11 @@ def predict_cv_tabular_v1(
             df = df.query(f"fold == {i_fold}").reset_index(drop=True)
 
         va_x = df[feature_columns]
-        va_pred = estimator.predict(va_x)
+
+        if predict_proba:
+            va_pred = estimator.predict_proba(va_x)
+        else:
+            va_pred = estimator.predict(va_x)
         i_result_df = df[result_columns].assign(pred=va_pred.tolist())
         if test:
             i_result_df = i_result_df.assign(est_fold=i_fold)

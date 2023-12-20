@@ -29,7 +29,14 @@ def assign_fold_index(
 
 
 def make_uid(source_dict: dict) -> str:
-    dict_str = json.dumps(source_dict, sort_keys=True)
+    data = {}
+    for key, value in source_dict.items():
+        try:
+            json.dumps(value)  # 値が JSON シリアライズ可能かテストする
+            data[key] = value
+        except TypeError:
+            data[key] = str(value)  # シリアライズできない場合は文字列として扱う
+    dict_str = json.dumps(data, sort_keys=True)
     return hashlib.sha256(dict_str.encode()).hexdigest()
 
 
