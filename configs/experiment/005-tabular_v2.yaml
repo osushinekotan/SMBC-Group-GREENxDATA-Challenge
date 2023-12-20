@@ -141,6 +141,7 @@ group_keys_for_agg:
 
 group_keys_for_te:
   - ["tree_dbh_bins10"]
+  - ["tree_age_bins10"]
   - ["tree_dbh_01"]
   - ["sidewalk"]
   - ["zip_city"]
@@ -155,6 +156,7 @@ group_keys_for_te:
   - ["st_assem"]
   - ["cncldist"]
   - ["spc_common"]
+  - ["problems"]
   - ["steward", "sidewalk"]
   - ["steward", "zip_city"]
   - ["steward", "guards"]
@@ -177,6 +179,18 @@ group_keys_for_te:
   - ["spc_common", "st_senate"]
   - ["spc_common", "st_assem"]
   - ["spc_common", "cncldist"]
+  - ["spc_common", "curb_loc"]
+  - ["user_type", "zip_city"]
+  - ["user_type", "steward"]
+  - ["user_type", "zip_city", "spc_common"]
+  - ["user_type", "steward", "spc_common"]
+  - ["spc_common", "tree_dbh_bins10"]
+  - ["spc_common", "tree_age_bins10"]
+  - ["spc_common", "tree_dbh_bins10", "zip_city"]
+  - ["spc_common", "tree_age_bins10", "zip_city"]
+  - ["spc_common", "tree_age_bins10", "zip_city", "user_type"]
+  - ["tree_age_bins10", "zip_city", "user_type"]
+  - ["tree_age_bins10", "zip_city", "sidewalk"]
 
 use_cat_features: false
 seed_average_seeds: [0, 1, 2]

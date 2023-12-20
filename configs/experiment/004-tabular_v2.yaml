@@ -13,7 +13,7 @@ experiment_name: ${hydra:job.override_dirname}
 notebook: tabular_v2
 
 feature_store: "001"
-cache_feature_extractors: true
+cache_feature_extractors: false
 overwrite_training: true
 
 # TODO : 樹齢 feature
@@ -140,66 +140,27 @@ group_keys_for_agg:
   - ["spc_common", "curb_loc"]
 
 group_keys_for_te:
-  - ["tree_dbh_bins10"]
-  - ["tree_dbh_01"]
-  - ["sidewalk"]
-  - ["zip_city"]
-  - ["curb_loc"]
-  - ["steward"]
-  - ["guards"]
-  - ["user_type"]
-  - ["nta"]
-  - ["cb_num"]
-  - ["boroname"]
-  - ["st_senate"]
-  - ["st_assem"]
-  - ["cncldist"]
-  - ["spc_common"]
-  - ["steward", "sidewalk"]
-  - ["steward", "zip_city"]
-  - ["steward", "guards"]
-  - ["steward", "user_type"]
-  - ["steward", "nta"]
-  - ["steward", "cb_num"]
-  - ["steward", "boroname"]
-  - ["steward", "st_senate"]
-  - ["steward", "st_assem"]
-  - ["steward", "cncldist"]
-  - ["steward", "curb_loc"]
-  - ["spc_common", "sidewalk"]
-  - ["spc_common", "zip_city"]
-  - ["spc_common", "steward"]
-  - ["spc_common", "guards"]
-  - ["spc_common", "user_type"]
-  - ["spc_common", "nta"]
-  - ["spc_common", "cb_num"]
-  - ["spc_common", "boroname"]
-  - ["spc_common", "st_senate"]
-  - ["spc_common", "st_assem"]
-  - ["spc_common", "cncldist"]
 
-use_cat_features: false
-seed_average_seeds: [0, 1, 2]
+use_cat_features: true # f_oe
 
 model:
   estimator:
-    _target_: lightgbm.LGBMClassifier
-    # https://lightgbm.readthedocs.io/en/latest/pythonapi/lightgbm.LGBMModel.html#lightgbm.LGBMModel
+    _target_: catboost.CatBoostClassifier
+    # https://catboost.ai/en/docs/concepts/python-reference_catboostclassifier
+    # https://catboost.ai/en/docs/references/training-parameters/common
+    task_type: "GPU"
     n_estimators: 10000
     num_leaves: 11
-    learning_rate: 0.1
-    objective: "multiclass"
-    colsample_bytree: 0.2
-    subsample: 0.5
+    learning_rate: 0.05
+    objective: "MultiClass"
+    eval_metric: "AUC" # 'TotalF1:average=Macro'
+    max_depth: 12
+    max_bin: 256
     random_state: 8823
-    class_weight: "balanced"
-    importance_type: "gain"
-    num_class: 3
+    auto_class_weights: "Balanced"
+    classes_count: 3
+    grow_policy: "SymmetricTree"
+    allow_writing_files: false
   fit_params:
-    callbacks:
-      - _target_: lightgbm.callback._EarlyStoppingCallback
-        stopping_rounds: 100
-        verbose: true
-        first_metric_only: false
-      - _target_: lightgbm.callback._LogEvaluationCallback
-        period: 100
+    early_stopping_rounds: 100
+    verbose: 100
