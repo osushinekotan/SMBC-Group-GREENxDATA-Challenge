@@ -1,0 +1,90 @@
+# @package _global_
+
+# to execute this experiment run:
+# python train.py experiment=example
+
+defaults:
+  - override /cv: stratified_kfold
+  - override /cat: default
+
+# all parameters below will be merged with parameters from default configurations set above
+# this allows you to overwrite only specified parameters
+
+experiment_name: ${hydra:job.override_dirname}
+notebook: tabular_v2
+
+feature_store: "001"
+cache_feature_extractors: false
+overwrite_training: true
+
+cv:
+  n_splits: 10
+
+# TODO : 樹齢 feature
+feature_extractors:
+  - _target_: src.experiment.customs.feature.CreatedAtFeatureExtractorV1
+  - _target_: src.experiment.customs.feature.CurbLocationFeatureExtractorV1
+  - _target_: src.experiment.customs.feature.StreetWidthFeatureExtractorV1
+  - _target_: src.experiment.customs.feature.GuardsFeatureExtractorV1
+  - _target_: src.experiment.customs.feature.SidewalkFeatureExtractorV1
+  - _target_: src.experiment.customs.feature.UserTypeFeatureExtractorV1
+  - _target_: src.experiment.customs.feature.ProblemsFeatureExtractorV1
+  - _target_: src.experiment.customs.feature.NtaFeatureExtractorV1
+  - _target_: src.experiment.customs.feature.RawTransformer
+    cols:
+      ["tree_dbh", "cb_num", "st_senate", "st_assem", "cncldist", "borocode"]
+  - _target_: src.experiment.feature.tabular.ConcatCombinationOrdinalEncoder
+    input_cols: ${cat.input_cols_for_ordinal_encoder}
+    r: 1
+    parents:
+      - _target_: src.experiment.customs.feature.CreatedAtFeatureExtractorV1
+      - _target_: src.experiment.customs.feature.TreeDbhFeatureExtractorV1
+
+agg_feature_extractors:
+  - _target_: src.experiment.feature.tabular.AggregatedFeatureExtractor
+    group_keys: null # set in notebook
+    group_values: ["tree_dbh"]
+    agg_methods: ["min", "max", "std", "mean", "median"]
+    extr_agg_methods: ["z-score"]
+    parents:
+      - _target_: src.experiment.customs.feature.CreatedAtFeatureExtractorV1
+      - _target_: src.experiment.customs.feature.TreeDbhFeatureExtractorV1
+
+te_feature_extractors:
+  - _target_: src.experiment.feature.tabular.TargetEncoder
+    group_keys: null # set in notebook
+    target_value: health
+    agg_methods: ["std", "mean"]
+    parents:
+      - _target_: src.experiment.customs.feature.CreatedAtFeatureExtractorV1
+      - _target_: src.experiment.customs.feature.TreeDbhFeatureExtractorV1
+
+group_keys_for_te: ${cat.group_keys_for_target_encoder_r1}
+group_keys_for_agg: ${cat.group_keys_for_target_encoder_r1}
+
+use_cat_features: false
+seed_average_seeds: [0]
+
+model:
+  estimator:
+    _target_: lightgbm.LGBMModel
+    # https://lightgbm.readthedocs.io/en/latest/pythonapi/lightgbm.LGBMModel.html#lightgbm.LGBMModel
+    n_estimators: 10000
+    num_leaves: 7
+    learning_rate: 0.1
+    objective: "multiclass"
+    colsample_bytree: 0.2
+    subsample: 0.2
+    random_state: 8823
+    class_weight: "balanced"
+    importance_type: "gain"
+    num_class: 3
+  fit_params:
+    callbacks:
+      - _target_: lightgbm.callback._EarlyStoppingCallback
+        stopping_rounds: 100
+        verbose: true
+        first_metric_only: true
+      - _target_: lightgbm.callback._LogEvaluationCallback
+        period: 100
+        show_stdv: true

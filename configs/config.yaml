@@ -5,4 +5,5 @@ defaults:
   - paths: default
   - hydra: default
   - cv: stratified_kfold
+  - cat: default
   - experiment: ???
