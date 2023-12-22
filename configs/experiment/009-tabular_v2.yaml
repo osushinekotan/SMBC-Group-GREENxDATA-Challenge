@@ -1,0 +1,94 @@
+# @package _global_
+
+# to execute this experiment run:
+# python train.py experiment=example
+
+defaults:
+  - override /cv: stratified_kfold
+  - override /cat: default
+
+# all parameters below will be merged with parameters from default configurations set above
+# this allows you to overwrite only specified parameters
+
+experiment_name: ${hydra:job.override_dirname}
+notebook: tabular_v2
+
+feature_store: "002"
+cache_feature_extractors: false
+overwrite_training: true
+
+cv:
+  n_splits: 10
+
+# TODO : 樹齢 feature
+feature_extractors:
+  - _target_: src.experiment.customs.feature.CreatedAtFeatureExtractorV1
+  - _target_: src.experiment.customs.feature.CurbLocationFeatureExtractorV1
+  - _target_: src.experiment.customs.feature.StreetWidthFeatureExtractorV1
+  - _target_: src.experiment.customs.feature.GuardsFeatureExtractorV1
+  - _target_: src.experiment.customs.feature.SidewalkFeatureExtractorV1
+  - _target_: src.experiment.customs.feature.UserTypeFeatureExtractorV1
+  - _target_: src.experiment.customs.feature.ProblemsFeatureExtractorV1
+  - _target_: src.experiment.customs.feature.NtaFeatureExtractorV1
+  - _target_: src.experiment.customs.feature.RawTransformer
+    cols:
+      ["tree_dbh", "cb_num", "st_senate", "st_assem", "cncldist", "borocode"]
+  - _target_: src.experiment.feature.tabular.ConcatCombinationOrdinalEncoder
+    input_cols: ${cat.input_cols_for_ordinal_encoder}
+    r: 1
+    parents:
+      - _target_: src.experiment.customs.feature.CreatedAtFeatureExtractorV1
+      - _target_: src.experiment.customs.feature.TreeDbhFeatureExtractorV1
+  - _target_: src.experiment.feature.tabular.ConcatCombinationOrdinalEncoder
+    input_cols: ${cat.input_cols_for_ordinal_encoder}
+    r: 2
+    parents:
+      - _target_: src.experiment.customs.feature.CreatedAtFeatureExtractorV1
+      - _target_: src.experiment.customs.feature.TreeDbhFeatureExtractorV1
+
+agg_feature_extractors:
+  - _target_: src.experiment.feature.tabular.AggregatedFeatureExtractor
+    group_keys: null # set in notebook
+    group_values: ["tree_dbh", "tree_age"]
+    agg_methods: ["std", "mean"]
+    extr_agg_methods: ["z-score"]
+    parents:
+      - _target_: src.experiment.customs.feature.CreatedAtFeatureExtractorV1
+      - _target_: src.experiment.customs.feature.TreeDbhFeatureExtractorV1
+
+te_feature_extractors:
+  - _target_: src.experiment.feature.tabular.TargetEncoder
+    group_keys: null # set in notebook
+    target_value: health
+    agg_methods: ["mean"]
+    parents:
+      - _target_: src.experiment.customs.feature.CreatedAtFeatureExtractorV1
+      - _target_: src.experiment.customs.feature.TreeDbhFeatureExtractorV1
+
+group_keys_for_te:
+group_keys_for_agg: #${cat.group_keys_for_target_encoder}
+
+use_cat_features: true
+seed_average_seeds: [0]
+
+model:
+  predict_proba: true
+  estimator:
+    _target_: catboost.CatBoostClassifier
+    # https://catboost.ai/en/docs/concepts/python-reference_catboostclassifier
+    # https://catboost.ai/en/docs/references/training-parameters/common
+    n_estimators: 500
+    # task_type: "GPU"
+    # num_leaves: 11
+    learning_rate: 0.2
+    objective: "MultiClass" # MultiClassOneVsAll
+    # eval_metric: "TotalF1:average=Macro" # 'TotalF1:average=Macro'  'AUC'
+    # max_depth: 6
+    random_state: 8823
+    auto_class_weights: "Balanced"
+    classes_count: 3
+    # grow_policy: "SymmetricTree"
+    allow_writing_files: false
+  fit_params:
+    early_stopping_rounds: 10
+    verbose: 10
