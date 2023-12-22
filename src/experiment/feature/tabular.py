@@ -67,6 +67,22 @@ class AggregatedFeatureExtractor(BaseFeatureExtractor):
         return new_df
 
 
+def _q_25(x):  # type: ignore
+    return x.quantile(0.25)
+
+
+def _q_75(x):  # type: ignore
+    return x.quantile(0.75)
+
+
+def _q_10(x):  # type: ignore
+    return x.quantile(0.1)
+
+
+def _q_90(x):  # type: ignore
+    return x.quantile(0.9)
+
+
 class TargetEncoder(BaseFeatureExtractor):
     def __init__(
         self,
@@ -74,6 +90,7 @@ class TargetEncoder(BaseFeatureExtractor):
         target_value: str,
         agg_methods: list[str | Callable],
         fold: str = "fold",
+        max_cardinality: int = 1000000,
         parents: list[BaseFeatureExtractor] | None = None,
     ):
         super().__init__(parents)
@@ -85,6 +102,7 @@ class TargetEncoder(BaseFeatureExtractor):
         self.encodings = {}  # type: ignore
 
         self.group_keys_str = "_".join(self.group_keys)
+        self.max_cardinality = max_cardinality
 
     def fit(self, input_df: pd.DataFrame) -> None:  # type: ignore
         # 各フォールドでの集約
@@ -97,15 +115,33 @@ class TargetEncoder(BaseFeatureExtractor):
         # 全体の集約（テストデータ用）
         self.encodings["overall"] = self._calculate_fold_encodings(input_df)
 
+    def _convert_agg_method(self, agg_methods: list) -> list:
+        converted_agg_methods = []
+        for agg_method in agg_methods:
+            if agg_method == "q25":
+                agg_method = _q_25
+            elif agg_method == "q75":
+                agg_method = _q_75
+            elif agg_method == "q10":
+                agg_method = _q_10
+            elif agg_method == "q90":
+                agg_method = _q_90
+            converted_agg_methods.append(agg_method)
+        return converted_agg_methods
+
     def _calculate_fold_encodings(self, df: pd.DataFrame) -> pd.DataFrame:
-        agg_df = df.groupby(self.group_keys).agg({self.target_value: self.agg_methods})
-        agg_df.columns = [f"te_{method}_{self.target_value}_grpby_{self.group_keys_str}" for method in self.agg_methods]
+        agg_methods = self._convert_agg_method(self.agg_methods)
+        agg_df = df.groupby(self.group_keys).agg({self.target_value: agg_methods})
+        agg_df.columns = [f"te_{method}_{self.target_value}_grpby_{self.group_keys_str}" for method in agg_methods]
         return agg_df.reset_index()
 
     def transform(self, input_df: pd.DataFrame) -> pd.DataFrame:  # type: ignore
         encoded_columns = []
 
         for fold_val, encodings in self.encodings.items():
+            if len(encodings) >= self.max_cardinality:
+                return pd.DataFrame()  # いい感じに変更したい (te で持たないようにしたい)
+
             # フォールドごとのデータを抽出
             if fold_val != "overall":
                 fold_df = input_df[input_df[self.fold] == fold_val]
@@ -135,6 +171,7 @@ class ConcatCombinationOrdinalEncoder(BaseFeatureExtractor):
         output_suffix: str = "_combi",
         fillna: str = "_NaN_",
         r: int = 2,
+        max_cardinality: int = 1000000,
         parents: list[BaseFeatureExtractor] | None = None,
     ):
         super().__init__(parents)
@@ -145,7 +182,7 @@ class ConcatCombinationOrdinalEncoder(BaseFeatureExtractor):
         self._output_suffix = output_suffix
         self._r = r
         self._fillna = fillna
-
+        self.max_cardinality = max_cardinality
         self.oe = ce.OrdinalEncoder()
 
     def make_categorical_feature_df(self, input_df: pd.DataFrame) -> pd.DataFrame:  # type: ignore
@@ -170,7 +207,12 @@ class ConcatCombinationOrdinalEncoder(BaseFeatureExtractor):
 
             df[new_col] = new_ser
 
-        return df[cols]
+        use_cols = []
+        for col in cols:
+            if df[col].nunique() < self.max_cardinality:
+                use_cols.append(col)
+
+        return df[use_cols]
 
     def fit(self, input_df: pd.DataFrame, **kwargs):  # type: ignore
         df = self.make_categorical_feature_df(input_df)
