@@ -160,6 +160,25 @@ class TargetEncoder(BaseFeatureExtractor):
         return output_df
 
 
+class OrdinalFeatureExtractor(BaseFeatureExtractor):
+    def __init__(
+        self,
+        input_cols: list[str],
+        parents: list[BaseFeatureExtractor] | None = None,
+    ):
+        super().__init__(parents)
+        self.input_cols: list[str] = input_cols
+        self.oe = ce.OrdinalEncoder()
+
+    def fit(self, input_df: pd.DataFrame):  # type: ignore
+        self.oe.fit(input_df[self.input_cols].astype(str))
+        return self
+
+    def transform(self, input_df):  # type: ignore
+        output_df = self.oe.transform(input_df[self.input_cols].astype(str)).add_prefix("oe_")
+        return output_df
+
+
 class ConcatCombinationOrdinalEncoder(BaseFeatureExtractor):
     """Generate combination of string columns. (xfeat style)"""
 

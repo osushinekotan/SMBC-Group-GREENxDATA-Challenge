@@ -3,7 +3,6 @@
 
 import re
 
-import category_encoders as ce
 import numpy as np
 import pandas as pd
 import rootutils
@@ -21,7 +20,7 @@ class CreatedAtFeatureExtractorV1(BaseFeatureExtractor):
         output_df = output_df.assign(
             created_at__year=ts.dt.year,
             created_at__month=ts.dt.month,
-            created_at__day=ts.dt.day,
+            # created_at__day=ts.dt.day,
         )
         output_df["tree_age"] = 2023 - output_df["created_at__year"]
         output_df["tree_age_bins10"] = pd.cut(output_df["tree_age"], bins=10, labels=False)
@@ -112,46 +111,67 @@ class ProblemsFeatureExtractorV1(BaseFeatureExtractor):
         return output_df
 
 
-class FirstProblemOrdinalFeatureExtractorV1(BaseFeatureExtractor):
-    def __init__(self, parents: list[BaseFeatureExtractor] | None = None):
-        super().__init__(parents)
-        self.oe = ce.OrdinalEncoder()
+class SpcCommonFeatureExtractorV1(BaseFeatureExtractor):
+    @staticmethod
+    def clean(string: str) -> str:
+        return string.replace("'", "")
 
-    def make_first_problem_df(self, problems: pd.Series | list[str]) -> pd.DataFrame:
-        df = pd.DataFrame()
-        df["first_problem"] = pd.Series(problems).fillna("Nan").apply(lambda x: re.split("(?=[A-Z])", x)[1])
-        return df
+    @staticmethod
+    def split_tree_name(tree_name: str) -> list[str]:
+        """
+        "English oak" -> ["English", "", "oak"]
+        "crimson king maple" -> ["", "crimson king", "maple"]
+        "silver maple" -> ["", "silver", "maple"]
+        """
+        words = tree_name.split()
+        country = words[0] if words[0].istitle() else ""
+        main_type = " ".join(words[1:-1]) if country else " ".join(words[:-1])
+        sub_type = words[-1]
 
-    def fit(self, input_df):
-        df = self.make_first_problem_df(input_df["problems"])
-        self.oe.fit(df[["first_problem"]])
-        return self
+        return [country, main_type, sub_type]
 
-    def transform(self, input_df: pd.DataFrame, **kwargs) -> pd.DataFrame:
-        df = self.make_first_problem_df(input_df["problems"])
-        output_df = self.oe.transform(df[["first_problem"]]).add_prefix("oe_")
+    def transform(self, input_df: pd.DataFrame):
+        output_df = (
+            input_df["spc_common"].apply(self.clean).apply(self.split_tree_name).apply(pd.Series).replace("", np.nan)
+        )
+        output_df.columns = ["spc_common_country", "spc_common_main_type", "spc_common_sub_type"]
+        return output_df
+
+
+class SpcLatinFeatureExtractorV1(BaseFeatureExtractor):
+    @staticmethod
+    def extract_genus_species(name):
+        """
+        Extracts the genus and species from a given Latin name.
+
+        Parameters:
+        name (str): The Latin name of the tree.
+
+        Returns:
+        tuple: A tuple containing the genus and species.
+        """
+        parts = name.split()
+        genus = parts[0] if parts else ""
+        species = " ".join(parts[1:]) if len(parts) > 1 else ""
+        return genus, species
+
+    def transform(self, input_df: pd.DataFrame):
+        output_df = input_df["spc_latin"].apply(self.extract_genus_species).apply(pd.Series).replace("", np.nan)
+        output_df.columns = ["spc_latin_genus", "spc_latin_species"]
         return output_df
 
 
 class NtaFeatureExtractorV1(BaseFeatureExtractor):
-    def __init__(self) -> None:
-        self.oe = ce.OrdinalEncoder()
-
-    def fit(self, input_df):
-        df = self.parse_nta(input_df)
-        self.oe.fit(df)
-        return self
-
     def parse_nta(self, input_df):
         df = input_df[["nta"]].copy()
-        df["nta_char"] = df["nta"].str[:2]
-        df["nta_num"] = df["nta"].str[2:]
-        return df
-
-    def transform(self, X, y=None):
-        df = self.parse_nta(X)
-        output_df = self.oe.transform(df).add_prefix("oe_")
+        output_df = pd.DataFrame()
+        output_df["nta_char"] = df["nta"].str[:2]
+        output_df["nta_num"] = df["nta"].str[2:]
         return output_df
+
+    def transform(self, input_df: pd.DataFrame):
+        df = self.parse_nta(input_df)
+        return df
 
 
 class RawTransformer(BaseFeatureExtractor):
@@ -161,17 +181,3 @@ class RawTransformer(BaseFeatureExtractor):
     def transform(self, input_df):
         output_df = input_df[self.cols].copy()
         return output_df.astype(np.float32)
-
-
-class OrdinalFeatureExtractor(BaseFeatureExtractor):
-    def __init__(self, cols=list[str]) -> None:
-        self.cols = cols
-        self.oe = ce.OrdinalEncoder()
-
-    def fit(self, input_df):
-        self.oe.fit(input_df[self.cols].astype(str))
-        return self
-
-    def transform(self, input_df):
-        output_df = self.oe.transform(input_df[self.cols].astype(str)).add_prefix("oe_")
-        return output_df
