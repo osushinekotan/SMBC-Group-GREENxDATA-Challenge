@@ -1,0 +1,151 @@
+input_cols_for_ordinal_encoder_r1:
+  # 下のデータフレームのカラム名
+  - curb_loc
+  - steward
+  - guards
+  - sidewalk
+  - user_type
+  - problems
+  - spc_common
+  - spc_latin
+  - nta
+  - borocode
+  - boro_ct
+  - boroname
+  - zip_city
+  - cb_num
+  - st_senate
+  - st_assem
+  - cncldist
+  # parents のカラム名
+  - spc_common_country
+  - spc_common_main_type
+  - spc_common_sub_type
+  - spc_latin_genus
+  - spc_latin_species
+  - nta_char
+  - nta_num
+  - created_at__year
+  - tree_age_bins10
+  - tree_dbh_01
+
+input_cols_for_ordinal_encoder_r2:
+  # 下のデータフレームのカラム名
+  - curb_loc
+  - steward
+  - guards
+  - sidewalk
+  - user_type
+  # parents のカラム名
+  - spc_common_country
+  - spc_common_main_type
+  - spc_common_sub_type
+  - spc_latin_genus
+  - spc_latin_species
+  - nta_char
+  - nta_num
+  - created_at__year
+  - tree_age_bins10
+  - tree_dbh_01
+
+group_keys_for_aggregation:
+  # 下のデータフレームのカラム名
+  - [curb_loc]
+  - [steward]
+  - [guards]
+  - [sidewalk]
+  - [user_type]
+  - [problems]
+  - [spc_common]
+  - [spc_latin]
+  - [nta]
+  - [borocode]
+  - [boro_ct]
+  - [boroname]
+  - [zip_city]
+  - [cb_num]
+  - [st_senate]
+  - [st_assem]
+  - [cncldist]
+  # parents のカラム名
+  - [spc_common_country]
+  - [spc_common_main_type]
+  - [spc_common_sub_type]
+  - [spc_latin_genus]
+  - [spc_latin_species]
+  - [nta_char]
+  - [nta_num]
+  - [created_at__year]
+  - [tree_age_bins10]
+  - [tree_dbh_01]
+  # boro_ct + α のカラム名
+  - [boro_ct, curb_loc]
+  - [boro_ct, steward]
+  - [boro_ct, guards]
+  - [boro_ct, sidewalk]
+  - [boro_ct, user_type]
+  - [boro_ct, spc_common_country]
+  - [boro_ct, spc_latin_genus]
+  - [boro_ct, created_at__year]
+  - [boro_ct, tree_dbh_01]
+  # spc_latin_genus + α のカラム名
+  - [spc_latin_genus, curb_loc]
+  - [spc_latin_genus, steward]
+  - [spc_latin_genus, guards]
+  - [spc_latin_genus, sidewalk]
+  - [spc_latin_genus, user_type]
+  - [spc_latin_genus, boro_ct]
+  - [spc_latin_genus, created_at__year]
+  - [spc_latin_genus, tree_dbh_01]
+  # # spc_latin_genus, tree_dbh_01 + α のカラム名
+  # - [spc_latin_genus, tree_dbh_01, created_at__year]
+  # - [spc_latin_genus, tree_dbh_01, spc_common_country]
+  # - [spc_latin_genus, tree_dbh_01, spc_latin_species]
+  # - [spc_latin_genus, tree_dbh_01, curb_loc]
+  # - [spc_latin_genus, tree_dbh_01, steward]
+  # - [spc_latin_genus, tree_dbh_01, guards]
+  # - [spc_latin_genus, tree_dbh_01, sidewalk]
+  # - [spc_latin_genus, tree_dbh_01, user_type]
+  # - [spc_latin_genus, tree_dbh_01, boro_ct]
+  # 木の環境情報カラム
+  - [curb_loc, steward, guards, sidewalk, user_type]
+  - [curb_loc, guards, sidewalk]
+  - [steward, user_type]
+  # spc_common + α のカラム名
+  - ["spc_common", "sidewalk"]
+  - ["spc_common", "zip_city"]
+  - ["spc_common", "steward"]
+  - ["spc_common", "guards"]
+  - ["spc_common", "user_type"]
+  - ["spc_common", "nta"]
+  - ["spc_common", "cb_num"]
+  - ["spc_common", "boroname"]
+  - ["spc_common", "st_senate"]
+  - ["spc_common", "st_assem"]
+  - ["spc_common", "cncldist"]
+  - ["spc_common", "curb_loc"]
+  - ["spc_common", "steward", "sidewalk"]
+  - ["spc_common", "steward", "zip_city"]
+  - ["spc_common", "steward", "guards"]
+  - ["spc_common", "steward", "user_type"]
+  - ["spc_common", "steward", "nta"]
+  - ["spc_common", "steward", "cb_num"]
+  - ["spc_common", "steward", "boroname"]
+  - ["spc_common", "steward", "st_senate"]
+  - ["spc_common", "steward", "st_assem"]
+  - ["spc_common", "steward", "cncldist"]
+  - ["spc_common", "steward", "curb_loc"]
+  - ["spc_common", "tree_dbh_bins10"]
+  - ["spc_common", "tree_dbh_01"]
+  - ["spc_common", "tree_dbh_bins10", "sidewalk"]
+  - ["spc_common", "tree_dbh_bins10", "zip_city"]
+  - ["spc_common", "tree_dbh_bins10", "steward"]
+  - ["spc_common", "tree_dbh_bins10", "guards"]
+  - ["spc_common", "tree_dbh_bins10", "user_type"]
+  - ["spc_common", "tree_dbh_bins10", "nta"]
+  - ["spc_common", "tree_dbh_bins10", "cb_num"]
+  - ["spc_common", "tree_dbh_bins10", "boroname"]
+  - ["spc_common", "tree_dbh_bins10", "st_senate"]
+  - ["spc_common", "tree_dbh_bins10", "st_assem"]
+  - ["spc_common", "tree_dbh_bins10", "cncldist"]
+  - ["spc_common", "tree_dbh_bins10", "curb_loc"]
