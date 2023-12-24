@@ -63,7 +63,7 @@ class AggregatedFeatureExtractor(BaseFeatureExtractor):
             new_df = self.calculate_z_scores(new_df)
             return new_df.drop(columns=self.group_values + self.group_keys)
 
-        new_df = new_df.drop(columns=self.group_keys)
+        new_df = new_df.drop(columns=self.group_values + self.group_keys)
         return new_df
 
 
