@@ -1,0 +1,118 @@
+# @package _global_
+
+# to execute this experiment run:
+# python train.py experiment=example
+
+defaults:
+  - override /cv: stratified_kfold
+  - override /cat: "009"
+
+# all parameters below will be merged with parameters from default configurations set above
+# this allows you to overwrite only specified parameters
+
+experiment_name: ${hydra:job.override_dirname}
+notebook: tabular_v2
+
+feature_store: "006"
+cache_feature_extractors: false
+overwrite_training: true
+
+align_train_test: true
+replace_rare_values_threshold: 100
+
+cv:
+  n_splits: 5
+
+# TODO : 樹齢 feature
+feature_extractors:
+  - _target_: src.experiment.customs.feature.CreatedAtFeatureExtractorV1
+  - _target_: src.experiment.customs.feature.CurbLocationFeatureExtractorV1
+  - _target_: src.experiment.customs.feature.StreetWidthFeatureExtractorV1
+  - _target_: src.experiment.customs.feature.GuardsFeatureExtractorV1
+  - _target_: src.experiment.customs.feature.SidewalkFeatureExtractorV1
+  - _target_: src.experiment.customs.feature.UserTypeFeatureExtractorV1
+  - _target_: src.experiment.customs.feature.ProblemsFeatureExtractorV1
+  - _target_: src.experiment.customs.feature.RawTransformer
+    cols:
+      - tree_dbh
+  - _target_: src.experiment.feature.tabular.OrdinalFeatureExtractor
+    input_cols: ${cat.input_cols_for_ordinal_encoder_r1}
+    parents:
+      - _target_: src.experiment.customs.feature.CreatedAtFeatureExtractorV1
+      - _target_: src.experiment.customs.feature.TreeDbhFeatureExtractorV1
+      - _target_: src.experiment.customs.feature.SpcCommonFeatureExtractorV1
+      - _target_: src.experiment.customs.feature.SpcLatinFeatureExtractorV1
+      - _target_: src.experiment.customs.feature.NtaFeatureExtractorV1
+
+agg_feature_extractors:
+  - _target_: src.experiment.feature.tabular.AggregatedFeatureExtractor
+    group_keys: null # set in notebook
+    group_values:
+      [
+        "tree_dbh",
+        "tree_age",
+        "num_problems",
+        "user_type_rank",
+        "sidewalk_binary",
+        "steward_rank",
+        "curb_loc_binary",
+      ]
+    agg_methods: ["std", "mean", "max", "min", "median"]
+    extr_agg_methods: [] # ["z-score"]
+    parents:
+      - _target_: src.experiment.customs.feature.CreatedAtFeatureExtractorV1
+      - _target_: src.experiment.customs.feature.TreeDbhFeatureExtractorV1
+      - _target_: src.experiment.customs.feature.SpcCommonFeatureExtractorV1
+      - _target_: src.experiment.customs.feature.SpcLatinFeatureExtractorV1
+      - _target_: src.experiment.customs.feature.NtaFeatureExtractorV1
+      - _target_: src.experiment.customs.feature.StreetWidthFeatureExtractorV1
+      - _target_: src.experiment.customs.feature.CurbLocationFeatureExtractorV1
+      - _target_: src.experiment.customs.feature.GuardsFeatureExtractorV1
+      - _target_: src.experiment.customs.feature.SidewalkFeatureExtractorV1
+      - _target_: src.experiment.customs.feature.UserTypeFeatureExtractorV1
+      - _target_: src.experiment.customs.feature.ProblemsFeatureExtractorV1
+
+te_feature_extractors:
+  - _target_: src.experiment.feature.tabular.TargetEncoder
+    group_keys: null # set in notebook
+    target_value: health
+    agg_methods: ["mean", "std"]
+    max_cardinality: 10000000
+    parents:
+      - _target_: src.experiment.customs.feature.CreatedAtFeatureExtractorV1
+      - _target_: src.experiment.customs.feature.TreeDbhFeatureExtractorV1
+      - _target_: src.experiment.customs.feature.SpcCommonFeatureExtractorV1
+      - _target_: src.experiment.customs.feature.SpcLatinFeatureExtractorV1
+      - _target_: src.experiment.customs.feature.NtaFeatureExtractorV1
+
+group_keys_for_te: ${cat.group_keys_for_target_encoding}
+group_keys_for_agg: ${cat.group_keys_for_aggregation}
+
+use_cat_features: false
+seed_average_seeds: [8823]
+
+model:
+  predict_proba: false
+  estimator:
+    _target_: lightgbm.LGBMModel
+    # https://lightgbm.readthedocs.io/en/latest/pythonapi/lightgbm.LGBMModel.html#lightgbm.LGBMModel
+    n_estimators: 10000
+    num_leaves: 11
+    learning_rate: 0.1
+    objective: "multiclass"
+    colsample_bytree: 0.2
+    subsample: 0.2
+    random_state: 8823
+    class_weight: "balanced"
+    importance_type: "gain"
+    num_class: 3
+    force_col_wise: true
+  fit_params:
+    callbacks:
+      - _target_: lightgbm.callback._EarlyStoppingCallback
+        stopping_rounds: 100
+        verbose: true
+        first_metric_only: false
+      - _target_: lightgbm.callback._LogEvaluationCallback
+        period: 100
+        show_stdv: true
