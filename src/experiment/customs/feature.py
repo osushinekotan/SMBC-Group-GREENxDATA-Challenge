@@ -123,6 +123,8 @@ class SpcCommonFeatureExtractorV1(BaseFeatureExtractor):
         "crimson king maple" -> ["", "crimson king", "maple"]
         "silver maple" -> ["", "silver", "maple"]
         """
+        if tree_name is np.nan:
+            return ["", "", ""]
         words = tree_name.split()
         country = words[0] if words[0].istitle() else ""
         main_type = " ".join(words[1:-1]) if country else " ".join(words[:-1])
@@ -132,7 +134,11 @@ class SpcCommonFeatureExtractorV1(BaseFeatureExtractor):
 
     def transform(self, input_df: pd.DataFrame):
         output_df = (
-            input_df["spc_common"].apply(self.clean).apply(self.split_tree_name).apply(pd.Series).replace("", np.nan)
+            input_df["spc_common"]
+            .map(self.clean, na_action="ignore")
+            .map(self.split_tree_name, na_action="ignore")
+            .apply(pd.Series)
+            .replace("", np.nan)
         )
         output_df.columns = ["spc_common_country", "spc_common_main_type", "spc_common_sub_type"]
         return output_df
@@ -150,6 +156,8 @@ class SpcLatinFeatureExtractorV1(BaseFeatureExtractor):
         Returns:
         tuple: A tuple containing the genus and species.
         """
+        if name is np.nan:
+            return ["", ""]
         parts = name.split()
         genus = parts[0] if parts else ""
         species = " ".join(parts[1:]) if len(parts) > 1 else ""
