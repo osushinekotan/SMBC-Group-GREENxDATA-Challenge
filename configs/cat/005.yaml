@@ -1,0 +1,112 @@
+input_cols_for_ordinal_encoder_r1:
+  # 下のデータフレームのカラム名
+  - curb_loc
+  - steward
+  - guards
+  - sidewalk
+  - user_type
+  - problems
+  - spc_common
+  - spc_latin
+  - nta
+  - borocode
+  - boro_ct
+  - boroname
+  - zip_city
+  - cb_num
+  - st_senate
+  - st_assem
+  - cncldist
+  # parents のカラム名
+  - spc_common_country
+  - spc_common_main_type
+  - spc_common_sub_type
+  - spc_latin_genus
+  - spc_latin_species
+  - nta_char
+  - nta_num
+  - created_at__year
+  - tree_age_bins10
+  - tree_dbh_01
+
+input_cols_for_ordinal_encoder_r2:
+  # 下のデータフレームのカラム名
+  - curb_loc
+  - steward
+  - guards
+  - sidewalk
+  - user_type
+  # parents のカラム名
+  - spc_common_country
+  - spc_common_main_type
+  - spc_common_sub_type
+  - spc_latin_genus
+  - spc_latin_species
+  - nta_char
+  - nta_num
+  - created_at__year
+  - tree_age_bins10
+  - tree_dbh_01
+
+group_keys_for_aggregation:
+  # 下のデータフレームのカラム名
+  - [curb_loc]
+  - [steward]
+  - [guards]
+  - [sidewalk]
+  - [user_type]
+  # - [problems]
+  - [spc_common]
+  - [spc_latin]
+  - [nta]
+  - [borocode]
+  - [boro_ct]
+  - [boroname]
+  - [zip_city]
+  - [cb_num]
+  - [st_senate]
+  - [st_assem]
+  - [cncldist]
+  # parents のカラム名
+  - [spc_common_country]
+  - [spc_common_main_type]
+  - [spc_common_sub_type]
+  - [spc_latin_genus]
+  - [spc_latin_species]
+  - [nta_char]
+  - [nta_num]
+  - [created_at__year]
+  - [tree_age_bins10]
+  - [tree_dbh_01]
+  # -------------------------------
+  # spc_common + α のカラム名
+  - [spc_common_main_type, curb_loc]
+  - [spc_common_main_type, steward]
+  - [spc_common_main_type, guards]
+  - [spc_common_main_type, sidewalk]
+  - [spc_common_main_type, user_type]
+  - [spc_common_main_type, nta]
+  - [spc_common_main_type, nta_char]
+  - [spc_common_main_type, nta_num]
+  - [spc_common_main_type, borocode]
+  - [spc_common_main_type, zip_city]
+  - [spc_common_main_type, st_senate]
+  - [spc_common_main_type, st_assem]
+  - [spc_common_main_type, cb_num]
+  - [spc_common_main_type, cncldist]
+  - [spc_common_main_type, created_at__year]
+  - [spc_common_main_type, tree_dbh_01]
+  - [spc_common_main_type, boro_ct]
+  # -------------------------------
+  - [spc_common_main_type, boro_ct, curb_loc]
+  - [spc_common_main_type, boro_ct, steward]
+  - [spc_common_main_type, boro_ct, guards]
+  - [spc_common_main_type, boro_ct, sidewalk]
+  - [spc_common_main_type, boro_ct, user_type]
+  # -------------------------------
+  - [boro_ct, spc_latin_genus]
+  - [boro_ct, curb_loc]
+  - [boro_ct, steward]
+  - [boro_ct, guards]
+  - [boro_ct, sidewalk]
+  - [boro_ct, user_type]
