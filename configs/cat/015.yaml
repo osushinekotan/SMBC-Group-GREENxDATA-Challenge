@@ -1,0 +1,117 @@
+input_cols_for_ordinal_encoder_r1:
+  # 下のデータフレームのカラム名
+  - curb_loc
+  - steward
+  - guards
+  - sidewalk
+  - user_type
+  - problems
+  - spc_common
+  - spc_latin
+  - nta
+  - borocode
+  # - boro_ct
+  - boroname
+  - zip_city
+  - cb_num
+  - st_senate
+  - st_assem
+  - cncldist
+  # parents のカラム名
+  - spc_common_country
+  - spc_common_main_type
+  - spc_common_sub_type
+  - spc_latin_genus
+  - spc_latin_species
+  - nta_char
+  - nta_num
+  - created_at__year
+  - tree_age_bins10
+  - tree_dbh_01
+
+input_cols_for_ordinal_encoder_r2:
+  # 下のデータフレームのカラム名
+  - curb_loc
+  - steward
+  - guards
+  - sidewalk
+  - user_type
+  # parents のカラム名
+  - spc_common_country
+  - spc_common_main_type
+  - spc_common_sub_type
+  - spc_latin_genus
+  - spc_latin_species
+  - nta_char
+  - nta_num
+  # - boro_ct
+  - created_at__year
+  - tree_age_bins10
+  - tree_dbh_01
+
+group_keys_for_aggregation:
+  # 下のデータフレームのカラム名
+  - [curb_loc]
+  - [steward]
+  - [guards]
+  - [sidewalk]
+  - [user_type]
+  - [problems]
+  - [spc_common]
+  - [spc_latin]
+  - [nta]
+  - [borocode]
+  # - [boro_ct]
+  - [boroname]
+  - [zip_city]
+  - [cb_num]
+  - [st_senate]
+  - [st_assem]
+  - [cncldist]
+  # parents のカラム名
+  - [spc_common_country]
+  - [spc_common_main_type]
+  - [spc_common_sub_type]
+  - [spc_latin_genus]
+  - [spc_latin_species]
+  - [nta_char]
+  - [nta_num]
+  - [created_at__year]
+  - [tree_age_bins10]
+  - [tree_dbh_01]
+  - [problem_is_Nan]
+  - [problem_is_Stones]
+  - [problem_is_Branch]
+  - [problem_is_Lights]
+  - [problem_is_Trunk]
+  - [problem_is_Other]
+  - [problem_is_Wires]
+  - [problem_is_Rope]
+  - [problem_is_Metal]
+  - [problem_is_Grates]
+  - [problem_is_Root]
+  - [problem_is_Sneakers]
+
+group_keys_for_target_encoding:
+  # 下のデータフレームのカラム名
+  - [curb_loc]
+  - [steward]
+  - [guards]
+  - [sidewalk]
+  - [user_type]
+  # parents のカラム名
+  - [tree_age_bins10]
+  - [tree_dbh_01]
+  - [problem_is_Nan]
+  - [problem_is_Stones]
+  - [problem_is_Branch]
+  - [problem_is_Lights]
+  - [problem_is_Trunk]
+  - [problem_is_Other]
+  - [problem_is_Wires]
+  - [problem_is_Rope]
+  - [problem_is_Metal]
+  - [problem_is_Grates]
+  - [problem_is_Root]
+  - [problem_is_Sneakers]
+  - [borocode]
