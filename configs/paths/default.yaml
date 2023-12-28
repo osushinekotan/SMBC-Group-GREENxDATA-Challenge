@@ -9,4 +9,6 @@ output_dir: ${paths.resource_dir}/outputs/${hydra:job.override_dirname}
 misc_dir: ${paths.resource_dir}/misc
 
 submission_dir: ${paths.output_dir}
-feature_store_dir: ${paths.resource_dir}/feature_store/${feature_store}
+
+# feature_store_dir: ${paths.resource_dir}/feature_store/${feature_store}
+feature_store_dir: ${paths.resource_dir}/feature_store/${now:%Y-%m-%d}/${now:%H-%M-%S}
