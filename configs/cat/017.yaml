@@ -1,0 +1,162 @@
+input_cols_for_ordinal_encoder_r1:
+  # 下のデータフレームのカラム名
+  - curb_loc
+  - steward
+  - guards
+  - sidewalk
+  - user_type
+  - problems
+  - spc_common
+  - spc_latin
+  - nta
+  - borocode
+  - boro_ct
+  - boroname
+  - zip_city
+  - cb_num
+  - st_senate
+  - st_assem
+  - cncldist
+  # parents のカラム名
+  - spc_common_country
+  - spc_common_main_type
+  - spc_common_sub_type
+  - spc_latin_genus
+  - spc_latin_species
+  - nta_char
+  - nta_num
+  - created_at__year
+  - tree_age_bins10
+  - tree_dbh_01
+
+input_cols_for_ordinal_encoder_r2:
+  # 下のデータフレームのカラム名
+  - curb_loc
+  - steward
+  - guards
+  - sidewalk
+  - user_type
+  - spc_common_country
+  - spc_common_main_type
+  - spc_common_sub_type
+  - spc_latin_genus
+  - spc_latin_species
+  - nta_char
+  - nta_num
+  - boro_ct
+  - created_at__year
+  - tree_age_bins10
+  - tree_dbh_01
+
+group_keys_for_aggregation:
+  # 下のデータフレームのカラム名
+  - [curb_loc]
+  - [steward]
+  - [guards]
+  - [sidewalk]
+  - [user_type]
+  - [problems]
+  - [spc_common]
+  - [spc_latin]
+  - [nta]
+  - [borocode]
+  - [boro_ct]
+  - [boroname]
+  - [zip_city]
+  - [cb_num]
+  - [st_senate]
+  - [st_assem]
+  - [cncldist]
+  # parents のカラム名
+  - [spc_common_country]
+  - [spc_common_main_type]
+  - [spc_common_sub_type]
+  - [spc_latin_genus]
+  - [spc_latin_species]
+  - [nta_char]
+  - [nta_num]
+  - [created_at__year]
+  - [created_at__month]
+  - [tree_age_bins10]
+  - [tree_dbh_01]
+  # - [problem_is_Nan]
+  - [problem_is_Stones]
+  - [problem_is_Branch]
+  - [problem_is_Lights]
+  - [problem_is_Trunk]
+  - [problem_is_Other]
+  - [problem_is_Wires]
+  - [problem_is_Rope]
+  - [problem_is_Metal]
+  - [problem_is_Grates]
+  - [problem_is_Root]
+  - [problem_is_Sneakers]
+  # # -------------------
+  - [spc_latin_genus, curb_loc]
+  - [spc_latin_genus, steward]
+  - [spc_latin_genus, guards]
+  - [spc_latin_genus, sidewalk]
+  - [spc_latin_genus, user_type]
+  # - [spc_latin_genus, problem_is_Nan]
+  - [spc_latin_genus, problem_is_Stones]
+  - [spc_latin_genus, problem_is_Branch]
+  - [spc_latin_genus, problem_is_Lights]
+  - [spc_latin_genus, problem_is_Trunk]
+  - [spc_latin_genus, problem_is_Other]
+  - [spc_latin_genus, problem_is_Wires]
+  - [spc_latin_genus, problem_is_Rope]
+  - [spc_latin_genus, problem_is_Metal]
+  - [spc_latin_genus, problem_is_Grates]
+  - [spc_latin_genus, problem_is_Root]
+  - [spc_latin_genus, problem_is_Sneakers]
+  - [created_at__year, created_at__month]
+  - [user_type, curb_loc]
+  - [user_type, steward]
+  - [user_type, guards]
+  - [user_type, sidewalk]
+  - [user_type, created_at__month]
+  - [user_type, created_at__month, curb_loc]
+  - [user_type, created_at__month, steward]
+  - [user_type, created_at__month, guards]
+  - [user_type, created_at__month, sidewalk]
+
+  - [nta, curb_loc]
+  - [nta, steward]
+  - [nta, guards]
+  - [nta, sidewalk]
+  - [nta, user_type]
+  - [nta, created_at__month, curb_loc]
+  - [nta, created_at__month, steward]
+  - [nta, created_at__month, guards]
+  - [nta, created_at__month, sidewalk]
+  - [nta, created_at__month, user_type]
+
+  # - [nta, user_type, curb_loc]
+  # - [nta, user_type, steward]
+  # - [nta, user_type, guards]
+  # - [nta, user_type, sidewalk]
+  # - [nta, user_type, curb_loc, steward]
+  # - [nta, user_type, curb_loc, guards]
+  # - [nta, user_type, curb_loc, sidewalk]
+
+  - [boro_ct, curb_loc]
+  - [boro_ct, steward]
+  - [boro_ct, guards]
+  - [boro_ct, sidewalk]
+  - [boro_ct, user_type]
+  - [boro_ct, created_at__month, curb_loc]
+  - [boro_ct, created_at__month, steward]
+  - [boro_ct, created_at__month, guards]
+  - [boro_ct, created_at__month, sidewalk]
+  - [boro_ct, created_at__month, user_type]
+
+  - [nta_num, curb_loc]
+  - [nta_num, steward]
+  - [nta_num, guards]
+  - [nta_num, sidewalk]
+  - [nta_num, user_type]
+  - [nta_num, created_at__month, curb_loc]
+  - [nta_num, created_at__month, steward]
+  - [nta_num, created_at__month, guards]
+  - [nta_num, created_at__month, sidewalk]
+  - [nta_num, created_at__month, user_type]
