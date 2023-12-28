@@ -28,6 +28,29 @@ class CreatedAtFeatureExtractorV1(BaseFeatureExtractor):
         return output_df
 
 
+class CreatedAtFeatureExtractorV2(BaseFeatureExtractor):
+    def transform(self, input_df):
+        ts = pd.to_datetime(input_df["created_at"])
+
+        output_df = pd.DataFrame()
+        output_df = output_df.assign(
+            created_at__year=ts.dt.year,
+            created_at__month=ts.dt.month,
+            created_at__day=ts.dt.day,
+        )
+        output_df["tree_age"] = 2023 - output_df["created_at__year"]
+        output_df["tree_age_bins10"] = pd.cut(output_df["tree_age"], bins=10, labels=False)
+
+        output_df["created_at_raw_ym"] = (
+            input_df["created_at"].apply(lambda x: x[:7].replace("-", "")).astype(int).tolist()
+        )
+        output_df["created_at_raw_ymd"] = (
+            input_df["created_at"].apply(lambda x: x.replace("-", "")).astype(int).tolist()
+        )
+
+        return output_df
+
+
 class TreeDbhFeatureExtractorV1(BaseFeatureExtractor):
     def transform(self, input_df):
         tree_dbh_s = input_df["tree_dbh"].astype(str).str.zfill(2)
