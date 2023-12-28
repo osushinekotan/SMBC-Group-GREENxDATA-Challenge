@@ -67,6 +67,55 @@ class AggregatedFeatureExtractor(BaseFeatureExtractor):
         return new_df
 
 
+class RollingAggregatedFeatureExtractor(BaseFeatureExtractor):
+    def __init__(
+        self,
+        group_keys: list[str],
+        group_values: list[str],
+        agg_methods: list[str | Callable],
+        ts_column: str,
+        window: str,
+        parents: list[BaseFeatureExtractor] | None = None,
+    ):
+        super().__init__(parents)
+        self.group_keys = list(group_keys)
+        self.group_values = list(group_values)
+        self.agg_methods = list(agg_methods)
+        self.ts_column = ts_column
+        self.window = window
+
+    def transform(self, input_df: pd.DataFrame) -> pd.DataFrame:  # type: ignore
+        # タイムスタンプ列をdatetime形式に変換
+        df = input_df.copy()
+        df[self.ts_column] = pd.to_datetime(input_df[self.ts_column])
+        # 集約データフレームの初期化
+        agg_dfs = []
+
+        # 各集約方法とカラムに対してローリング集約を計算
+        for agg_method in self.agg_methods:
+            method_name = agg_method if isinstance(agg_method, str) else agg_method.__name__
+            for col in self.group_values:
+                rolling_col = f"rolling_{method_name}_{col}_grpby_{'_'.join(self.group_keys)}_{self.window}"
+                grouped = (
+                    df[self.group_keys + [self.ts_column, col]].sort_values(self.ts_column).groupby(self.group_keys)
+                )
+                _df = (
+                    grouped.rolling(
+                        window=str(self.window),
+                        on=str(self.ts_column),
+                        center=True,
+                    )[col]
+                    .agg(agg_method)
+                    .reset_index()
+                ).set_index([self.ts_column] + self.group_keys)
+                _df.columns = [rolling_col]
+                agg_dfs.append(_df)
+
+        # 集約データフレームを元のデータフレームに結合
+        new_df = df.merge(pd.concat(agg_dfs, axis=1), how="left", on=self.group_keys + [self.ts_column])
+        return new_df.drop(columns=self.group_values + self.group_keys + [self.ts_column])
+
+
 def _q_25(x):  # type: ignore
     return x.quantile(0.25)
 
