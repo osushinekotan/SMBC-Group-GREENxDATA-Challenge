@@ -112,8 +112,10 @@ class RollingAggregatedFeatureExtractor(BaseFeatureExtractor):
                 agg_dfs.append(_df)
 
         # 集約データフレームを元のデータフレームに結合
-        new_df = df.merge(pd.concat(agg_dfs, axis=1), how="left", on=self.group_keys + [self.ts_column])
-        return new_df.drop(columns=self.group_values + self.group_keys + [self.ts_column])
+        on_keys = self.group_keys + [self.ts_column]
+        mapping_df = pd.concat(agg_dfs, axis=1).reset_index().drop_duplicates(subset=on_keys)  # TODO : for loop ないで対応
+        new_df = df[on_keys].merge(mapping_df, how="left", on=on_keys).drop(columns=on_keys)
+        return new_df.reset_index(drop=True)
 
 
 def _q_25(x):  # type: ignore
