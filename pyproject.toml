@@ -21,6 +21,7 @@ dependencies = [
     "seaborn>=0.13.0",
     "catboost>=1.2.2",
     "pytest>=7.4.3",
+    "lightning-flash[text]>=0.8.2",
 ]
 readme = "README.md"
 requires-python = ">= 3.8"
