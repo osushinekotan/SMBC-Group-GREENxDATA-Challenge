@@ -24,14 +24,18 @@ def train_cv_tabular_v1(
     estimator: estimator_types,
     feature_columns: list[str],
     target_columns: str,
-    fit_params: dict,
+    fit_params: dict | None,
     output_dir: Path,
     train_folds: list[int] | None = None,
     overwrite: bool = False,
     use_xgb_class_weight: bool = False,
+    use_eval_set: bool = True,
 ) -> list[estimator_types]:
     """train cv for xgboost estimator"""
     estimators = []
+
+    if fit_params is None:
+        fit_params = {}
 
     if train_folds is None:
         train_folds = sorted(df["fold"].unique())
@@ -66,8 +70,10 @@ def train_cv_tabular_v1(
             if estimator_name == "XGBModel":
                 fit_params["sample_weight"] = compute_sample_weight(class_weight="balanced", y=tr_y)
                 fit_params["sample_weight_eval_set"] = [compute_sample_weight(class_weight="balanced", y=va_y)]
+        if use_eval_set:
+            fit_params["eval_set"] = [(va_x, va_y)]
 
-        fit_estimator.fit(X=tr_x, y=tr_y, eval_set=[(va_x, va_y)], **fit_params)
+        fit_estimator.fit(X=tr_x, y=tr_y, **fit_params)
         estimators.append(fit_estimator)
 
         joblib.dump(fit_estimator, estimator_path)
