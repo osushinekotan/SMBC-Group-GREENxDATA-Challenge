@@ -23,6 +23,7 @@ dependencies = [
     "pytest>=7.4.3",
     "lightning-flash[text]>=0.8.2",
     "optuna>=3.5.0",
+    "scipy>=1.10.1",
 ]
 readme = "README.md"
 requires-python = ">= 3.8"
