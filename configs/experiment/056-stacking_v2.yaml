@@ -1,0 +1,85 @@
+# @package _global_
+
+# to execute this experiment run:
+# python train.py experiment=example
+
+defaults:
+  - override /cv: stratified_kfold
+  - override /cat: "020"
+
+# all parameters below will be merged with parameters from default configurations set above
+# this allows you to overwrite only specified parameters
+
+experiment_name: ${hydra:job.override_dirname}
+notebook: stacking_v2
+
+feature_store: "015"
+cache_feature_extractors: false
+overwrite_training: true
+
+ensemble_exps:
+  - experiment=043-tabular_v3
+  - experiment=049-tabular_v3
+
+cv:
+  n_splits: 5
+
+feature_extractors:
+  - _target_: src.experiment.customs.feature.CreatedAtFeatureExtractorV2
+  - _target_: src.experiment.customs.feature.CurbLocationFeatureExtractorV1
+  - _target_: src.experiment.customs.feature.StreetWidthFeatureExtractorV1
+  - _target_: src.experiment.customs.feature.GuardsFeatureExtractorV1
+  - _target_: src.experiment.customs.feature.SidewalkFeatureExtractorV1
+  - _target_: src.experiment.customs.feature.UserTypeFeatureExtractorV1
+  - _target_: src.experiment.customs.feature.ProblemsFeatureExtractorV1
+  - _target_: src.experiment.customs.feature.RawTransformer
+    cols:
+      - tree_dbh
+      # - boro_ct
+  - _target_: src.experiment.feature.tabular.OrdinalFeatureExtractor
+    input_cols: ${cat.input_cols_for_ordinal_encoder_r1}
+    parents:
+      - _target_: src.experiment.customs.feature.CreatedAtFeatureExtractorV2
+      - _target_: src.experiment.customs.feature.TreeDbhFeatureExtractorV1
+      - _target_: src.experiment.customs.feature.SpcCommonFeatureExtractorV1
+      - _target_: src.experiment.customs.feature.SpcLatinFeatureExtractorV1
+      - _target_: src.experiment.customs.feature.NtaFeatureExtractorV1
+
+agg_feature_extractors:
+  -
+rolling_agg_feature_extractors:
+  -
+te_feature_extractors:
+  -
+
+seed_average_seeds: [31, 71, 111]
+use_cat_features: false
+model:
+  predict_proba: false
+  use_eval_set: true
+  estimator:
+    _target_: lightgbm.LGBMModel
+    # https://lightgbm.readthedocs.io/en/latest/pythonapi/lightgbm.LGBMModel.html#lightgbm.LGBMModel
+    boosting_type: "gbdt"
+    n_estimators: 10000
+    num_leaves: 111
+    learning_rate: 0.01
+    objective: "multiclass"
+    colsample_bytree: 0.2
+    subsample: 0.5
+    random_state: 8823
+    class_weight: "balanced"
+    importance_type: "gain"
+    num_class: 3
+    force_col_wise: true
+    reg_alpha: 1.0
+    reg_lambda: 1.0
+  fit_params:
+    callbacks:
+      - _target_: lightgbm.callback._EarlyStoppingCallback
+        stopping_rounds: 100
+        verbose: true
+        first_metric_only: false
+      - _target_: lightgbm.callback._LogEvaluationCallback
+        period: 100
+        show_stdv: true
