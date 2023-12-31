@@ -134,6 +134,46 @@ class ProblemsFeatureExtractorV1(BaseFeatureExtractor):
         return output_df
 
 
+class ProblemsFeatureExtractorV2(BaseFeatureExtractor):
+    def make_num_problems_df(self, problems: pd.Series | list[str]) -> list:
+        num_problems = [len(re.split("(?=[A-Z])", problem)[1:]) if problem != "nan" else np.nan for problem in problems]
+        return pd.DataFrame({"num_problems": num_problems})
+
+    def make_problems_onehot_df(self, input_df) -> pd.DataFrame:
+        df = input_df[["problems"]].copy()
+        for index, item in df[["problems"]].fillna("Nan").iterrows():
+            elements = re.split("(?=[A-Z])", item["problems"])
+            for element in elements:
+                if element:
+                    df.at[index, element] = 1
+            if "Other" in item:
+                df.at[index, "Other"] = 1
+
+        output_df = df.drop(columns=["problems"]).fillna(0).astype(int).add_prefix("problem_is_")
+
+        cols = [
+            "problem_is_Nan",
+            "problem_is_Stones",
+            "problem_is_Branch",
+            "problem_is_Lights",
+            "problem_is_Trunk",
+            "problem_is_Other",
+            "problem_is_Wires",
+            "problem_is_Rope",
+            "problem_is_Metal",
+            "problem_is_Grates",
+            "problem_is_Root",
+            "problem_is_Sneakers",
+        ]
+        return output_df[cols]
+
+    def transform(self, input_df):
+        features_num_problems_df = self.make_num_problems_df(input_df["problems"].fillna("nan"))
+        features_problems_onehot_df = self.make_problems_onehot_df(input_df)
+        output_df = pd.concat([features_num_problems_df, features_problems_onehot_df], axis=1)
+        return output_df
+
+
 class SpcCommonFeatureExtractorV1(BaseFeatureExtractor):
     @staticmethod
     def clean(string: str) -> str:
