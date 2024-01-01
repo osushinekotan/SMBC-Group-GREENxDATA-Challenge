@@ -24,6 +24,8 @@ dependencies = [
     "lightning-flash[text]>=0.8.2",
     "optuna>=3.5.0",
     "scipy>=1.10.1",
+    "transformers>=4.36.2",
+    "accelerate>=0.25.0",
 ]
 readme = "README.md"
 requires-python = ">= 3.8"
