@@ -1,0 +1,47 @@
+# @package _global_
+
+# to execute this experiment run:
+# python train.py experiment=example
+
+defaults:
+  - override /cv: stratified_kfold
+  - override /cat: "020"
+
+# all parameters below will be merged with parameters from default configurations set above
+# this allows you to overwrite only specified parameters
+
+experiment_name: ${hydra:job.override_dirname}
+notebook: text_v1
+debug: false
+
+feature_store: "015"
+cache_feature_extractors: false
+overwrite_training: true
+
+align_train_test: false
+replace_rare_values_threshold: 0
+
+transformer_model: microsoft/deberta-v3-large
+max_length: 512
+
+cv:
+  n_splits: 5
+
+train_args:
+  _target_: transformers.TrainingArguments
+  output_dir: null # will be set
+  evaluation_strategy: "epoch"
+  learning_rate: 0.000005
+  per_device_train_batch_size: 12
+  per_device_eval_batch_size: 64
+  num_train_epochs: 16
+  weight_decay: 0.01
+  fp16: true
+  save_total_limit: 1
+  save_strategy: "epoch"
+  metric_for_best_model: f1_score
+  load_best_model_at_end: True
+  greater_is_better: True
+  gradient_checkpointing: True
+  # gradient_accumulation_steps: 4
+  seed: 42
