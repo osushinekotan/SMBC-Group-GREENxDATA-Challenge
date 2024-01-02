@@ -1,0 +1,23 @@
+# @package _global_
+
+# to execute this experiment run:
+# python train.py experiment=example
+
+defaults:
+  - override /cv: stratified_kfold
+
+# all parameters below will be merged with parameters from default configurations set above
+# this allows you to overwrite only specified parameters
+
+experiment_name: ${hydra:job.override_dirname}
+notebook: ensemble_v1
+
+feature_store: "015"
+cache_feature_extractors: false
+overwrite_training: true
+
+ensemble_exps:
+  - experiment=068-tabular_v4
+  - experiment=058-tabular_v4
+  # - experiment=066-tabular_v4
+  - experiment=069-stacking_v3
