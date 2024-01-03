@@ -1,0 +1,188 @@
+input_cols_for_ordinal_encoder_r1:
+  # 下のデータフレームのカラム名
+  - curb_loc
+  - steward
+  - guards
+  - sidewalk
+  - user_type
+  - problems
+  - spc_common
+  - spc_latin
+  - nta
+  - borocode
+  - boro_ct
+  - boroname
+  - zip_city
+  - cb_num
+  - st_senate
+  - st_assem
+  - cncldist
+  # parents のカラム名
+  - spc_common_country
+  - spc_common_main_type
+  - spc_common_sub_type
+  - spc_latin_genus
+  - spc_latin_species
+  - nta_char
+  - nta_num
+  - created_at__year
+  - tree_age_bins10
+  - tree_dbh_01
+
+input_cols_for_ordinal_encoder_r2:
+  # 下のデータフレームのカラム名
+  - curb_loc
+  - steward
+  - guards
+  - sidewalk
+  - user_type
+  - spc_common_country
+  - spc_common_main_type
+  - spc_common_sub_type
+  - spc_latin_genus
+  - spc_latin_species
+  - nta_char
+  - nta_num
+  - boro_ct
+  - created_at__year
+  - tree_age_bins10
+  - tree_dbh_01
+
+group_keys_for_aggregation:
+  # 下のデータフレームのカラム名
+  - [curb_loc]
+  - [steward]
+  - [guards]
+  - [sidewalk]
+  - [user_type]
+  - [problems]
+  - [spc_common]
+  - [spc_latin]
+  - [nta]
+  - [borocode]
+  - [boro_ct]
+  - [boroname]
+  - [zip_city]
+  - [cb_num]
+  - [st_senate]
+  - [st_assem]
+  - [cncldist]
+  # parents のカラム名
+  - [spc_common_country]
+  - [spc_common_main_type]
+  - [spc_common_sub_type]
+  - [spc_latin_genus]
+  - [spc_latin_species]
+  - [nta_char]
+  - [nta_num]
+  - [created_at__year]
+  - [created_at__month]
+  - [tree_age_bins10]
+  - [tree_dbh_01]
+  # # -------------------
+  - [spc_latin_genus, curb_loc]
+  - [spc_latin_genus, steward]
+  - [spc_latin_genus, guards]
+  - [spc_latin_genus, sidewalk]
+  - [spc_latin_genus, user_type]
+  - [user_type, curb_loc]
+  - [user_type, steward]
+  - [user_type, guards]
+  - [user_type, sidewalk]
+  - [user_type, created_at__month]
+  - [user_type, created_at__month, curb_loc]
+  - [user_type, created_at__month, steward]
+  - [user_type, created_at__month, guards]
+  - [user_type, created_at__month, sidewalk]
+
+  # - [nta, curb_loc]
+  # - [nta, steward]
+  # - [nta, guards]
+  # - [nta, sidewalk]
+  # - [nta, user_type]
+  # - [nta, created_at__month, curb_loc]
+  # - [nta, created_at__month, steward]
+  # - [nta, created_at__month, guards]
+  # - [nta, created_at__month, sidewalk]
+  # - [nta, created_at__month, user_type]
+
+  # - [nta, user_type, curb_loc]
+  # - [nta, user_type, steward]
+  # - [nta, user_type, guards]
+  # - [nta, user_type, sidewalk]
+  # - [nta, user_type, curb_loc, steward]
+  # - [nta, user_type, curb_loc, guards]
+  # - [nta, user_type, curb_loc, sidewalk]
+
+  - [nta_num, curb_loc]
+  - [nta_num, steward]
+  - [nta_num, guards]
+  - [nta_num, sidewalk]
+  - [nta_num, user_type]
+  - [nta_num, created_at__month, curb_loc]
+  - [nta_num, created_at__month, steward]
+  - [nta_num, created_at__month, guards]
+  - [nta_num, created_at__month, sidewalk]
+  - [nta_num, created_at__month, user_type]
+  - [nta_num, created_at_raw_ym, curb_loc]
+  - [nta_num, created_at_raw_ym, steward]
+  - [nta_num, created_at_raw_ym, guards]
+  - [nta_num, created_at_raw_ym, sidewalk]
+  - [nta_num, created_at_raw_ym, user_type]
+  - [nta_num, user_type, curb_loc]
+  - [nta_num, user_type, steward]
+  - [nta_num, user_type, guards]
+  - [nta_num, user_type, sidewalk]
+  - [nta_num, sidewalk, curb_loc]
+  - [nta_num, sidewalk, steward]
+  - [nta_num, sidewalk, guards]
+  - [nta_num, sidewalk, user_type]
+  - [nta_num, guards, curb_loc]
+  - [nta_num, guards, steward]
+  - [nta_num, guards, sidewalk]
+  - [nta_num, guards, user_type]
+  - [nta_num, steward, curb_loc]
+  - [nta_num, steward, guards]
+  - [nta_num, steward, sidewalk]
+  - [nta_num, steward, user_type]
+  - [nta_num, curb_loc, steward]
+  - [nta_num, curb_loc, guards]
+  - [nta_num, curb_loc, sidewalk]
+  - [nta_num, curb_loc, user_type]
+  - [nta_num, created_at_raw_ym, user_type, curb_loc]
+  - [nta_num, created_at_raw_ym, user_type, steward]
+  - [nta_num, created_at_raw_ym, user_type, guards]
+  - [nta_num, created_at_raw_ym, user_type, sidewalk]
+  - [nta_num, created_at_raw_ym, sidewalk, curb_loc]
+  - [nta_num, created_at_raw_ym, sidewalk, steward]
+  - [nta_num, created_at_raw_ym, sidewalk, guards]
+  - [nta_num, created_at_raw_ym, sidewalk, user_type]
+  - [nta_num, created_at_raw_ym, guards, curb_loc]
+  - [nta_num, created_at_raw_ym, guards, steward]
+  - [nta_num, created_at_raw_ym, guards, sidewalk]
+  - [nta_num, created_at_raw_ym, guards, user_type]
+  - [nta_num, created_at_raw_ym, steward, curb_loc]
+  - [nta_num, created_at_raw_ym, steward, guards]
+  - [nta_num, created_at_raw_ym, steward, sidewalk]
+  - [nta_num, created_at_raw_ym, steward, user_type]
+  - [nta_num, created_at_raw_ym, curb_loc, steward]
+  - [nta_num, created_at_raw_ym, curb_loc, guards]
+  - [nta_num, created_at_raw_ym, curb_loc, sidewalk]
+  - [nta_num, created_at_raw_ym, curb_loc, user_type]
+
+  # - [nta_num, curb_loc]
+  # - [nta_num, steward]
+  # - [nta_num, guards]
+  # - [nta_num, sidewalk]
+  # - [nta_num, user_type]
+  # - [nta_num, created_at__month, curb_loc]
+  # - [nta_num, created_at__month, steward]
+  # - [nta_num, created_at__month, guards]
+  # - [nta_num, created_at__month, sidewalk]
+  # - [nta_num, created_at__month, user_type]
+
+  - [created_at_raw_ymd, curb_loc]
+  - [created_at_raw_ymd, steward]
+  - [created_at_raw_ymd, guards]
+  - [created_at_raw_ymd, sidewalk]
+  - [created_at_raw_ymd, user_type]
