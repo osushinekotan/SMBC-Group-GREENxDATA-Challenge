@@ -28,7 +28,7 @@ def train_cv_tabular_v1(
     output_dir: Path,
     train_folds: list[int] | None = None,
     overwrite: bool = False,
-    use_xgb_class_weight: bool = False,
+    use_xgb_class_weight: bool | None = False,
     use_eval_set: bool = True,
 ) -> list[estimator_types]:
     """train cv for xgboost estimator"""
@@ -39,6 +39,9 @@ def train_cv_tabular_v1(
 
     if train_folds is None:
         train_folds = sorted(df["fold"].unique())
+
+    if use_xgb_class_weight is None:
+        use_xgb_class_weight = False
 
     for i_fold in train_folds:
         logger.info(f"start training fold={i_fold} 🚀 ")
