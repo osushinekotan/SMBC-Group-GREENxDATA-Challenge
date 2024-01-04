@@ -11,7 +11,7 @@ defaults:
 # this allows you to overwrite only specified parameters
 
 experiment_name: ${hydra:job.override_dirname}
-notebook: tabular_v4
+notebook: tabular_v5
 
 feature_store: "015"
 cache_feature_extractors: false
@@ -22,7 +22,6 @@ replace_rare_values_threshold: 0
 
 cv:
   n_splits: 10
-  random_state: 88
 
 feature_extractors:
   - _target_: src.experiment.customs.feature.CreatedAtFeatureExtractorV2
@@ -31,7 +30,7 @@ feature_extractors:
   - _target_: src.experiment.customs.feature.GuardsFeatureExtractorV1
   - _target_: src.experiment.customs.feature.SidewalkFeatureExtractorV1
   - _target_: src.experiment.customs.feature.UserTypeFeatureExtractorV1
-  - _target_: src.experiment.customs.feature.ProblemsFeatureExtractorV2
+  - _target_: src.experiment.customs.feature.ProblemsFeatureExtractorV1
   - _target_: src.experiment.customs.feature.RawTransformer
     cols:
       - tree_dbh
@@ -45,21 +44,53 @@ feature_extractors:
       - _target_: src.experiment.customs.feature.SpcLatinFeatureExtractorV1
       - _target_: src.experiment.customs.feature.NtaFeatureExtractorV1
 
-  - _target_: src.experiment.feature.tabular.ConcatCombinationOrdinalEncoder
-    input_cols: ${cat.input_cols_for_ordinal_encoder_r2}
-    r: 2
+agg_feature_extractors:
+  - _target_: src.experiment.feature.tabular.AggregatedFeatureExtractor
+    group_keys: null # set in notebook
+    group_values: [
+        tree_dbh,
+        tree_age,
+        num_problems,
+        user_type_rank,
+        is_volunteer,
+        sidewalk_binary,
+        steward_rank,
+        curb_loc_binary,
+        problem_is_Nan,
+        # problem_is_Stones,
+        # problem_is_Branch,
+        # problem_is_Lights,
+        # problem_is_Trunk,
+        # problem_is_Other,
+        # problem_is_Wires,
+        # problem_is_Rope,
+        # problem_is_Metal,
+        # problem_is_Grates,
+        # problem_is_Root,
+        # problem_is_Sneakers,
+        # "health",
+      ]
+    agg_methods: ["std", "mean"]
+    extr_agg_methods: [] # [] # ["z-score"]
     parents:
       - _target_: src.experiment.customs.feature.CreatedAtFeatureExtractorV2
       - _target_: src.experiment.customs.feature.TreeDbhFeatureExtractorV1
       - _target_: src.experiment.customs.feature.SpcCommonFeatureExtractorV1
       - _target_: src.experiment.customs.feature.SpcLatinFeatureExtractorV1
       - _target_: src.experiment.customs.feature.NtaFeatureExtractorV1
+      - _target_: src.experiment.customs.feature.StreetWidthFeatureExtractorV1
+      - _target_: src.experiment.customs.feature.CurbLocationFeatureExtractorV1
+      - _target_: src.experiment.customs.feature.GuardsFeatureExtractorV1
+      - _target_: src.experiment.customs.feature.SidewalkFeatureExtractorV1
+      - _target_: src.experiment.customs.feature.UserTypeFeatureExtractorV1
+      - _target_: src.experiment.customs.feature.ProblemsFeatureExtractorV1
 
-group_keys_for_te: # ${cat.group_keys_for_target_encoding}
 group_keys_for_agg: ${cat.group_keys_for_aggregation}
 
 use_cat_features: false
-seed_average_seeds: [51, 81, 111]
+seed_average_seeds: [71, 51, 91]
+
+num_features: 1000 # n_splits=5, seed_average_seeds=[71]
 
 model:
   predict_proba: false
@@ -70,14 +101,11 @@ model:
     num_leaves: 31
     learning_rate: 0.01
     objective: "multiclass"
-    colsample_bytree: 0.5
-    subsample: 0.4178286806732424
-    subsample_freq: 6
-    min_child_samples: 10
-    feature_pre_filter: true
+    colsample_bytree: 0.2
+    subsample: 0.5
     random_state: 8823
     class_weight: "balanced"
-    importance_type: "split"
+    importance_type: "gain"
     num_class: 3
     force_col_wise: true
     reg_alpha: 1.0

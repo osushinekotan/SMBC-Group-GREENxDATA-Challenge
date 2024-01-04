@@ -173,6 +173,83 @@ class RollingAggregatedFeatureExtractorV2(BaseFeatureExtractor):
         return new_df.reset_index(drop=True)
 
 
+class RollingAggregatedFeatureExtractorV3:
+    def __init__(
+        self,
+        group_keys: list[str],
+        group_values: list[str],
+        agg_methods: list[str | Callable],
+        transform_method: str,
+        ts_column: str,
+        window: str,
+    ):
+        self.group_keys = list(group_keys)
+        self.group_values = list(group_values)
+        self.agg_methods = list(agg_methods)
+        self.ts_column = ts_column
+        self.window = window
+        self.transform_method = transform_method
+
+    def make_mapping_df(self, input_df: pd.DataFrame) -> pd.DataFrame:
+        df = input_df.copy()
+        df[self.ts_column] = pd.to_datetime(df[self.ts_column])
+
+        agg_dfs = []
+
+        # 各集約方法とカラムに対してローリング集約を計算
+        for agg_method in self.agg_methods:
+            method_name = agg_method if isinstance(agg_method, str) else agg_method.__name__
+            for col in self.group_values:
+                rolling_col = f"rolling_{method_name}_{col}_grpby_{'_'.join(self.group_keys)}_{self.window}"
+                grouped = (
+                    df[self.group_keys + [self.ts_column, col]].sort_values(self.ts_column).groupby(self.group_keys)
+                )
+                _df = (
+                    grouped.rolling(
+                        window=str(self.window),
+                        on=str(self.ts_column),
+                        center=True,
+                    )[col]
+                    .agg(agg_method)
+                    .reset_index()
+                ).set_index([self.ts_column] + self.group_keys)
+                _df.columns = [rolling_col]
+                agg_dfs.append(_df)
+
+        # 集約データフレームを元のデータフレームに結合
+        on_keys = self.group_keys + [self.ts_column]
+        mapping_df = pd.concat(agg_dfs, axis=1).reset_index().drop_duplicates(subset=on_keys)
+        return mapping_df
+
+    def fit(self, input_df: pd.DataFrame):  # type: ignore
+        # train のみ
+        self.mapping_df = self.make_mapping_df(input_df=input_df)
+        return self
+
+    def transform(self, input_df: pd.DataFrame) -> pd.DataFrame:  # type: ignore
+        df = input_df.copy()
+        df[self.ts_column] = pd.to_datetime(df[self.ts_column])
+
+        on_keys = self.group_keys + [self.ts_column]
+        test_mapping_df = self.make_mapping_df(input_df=df)
+        full_mapping_df = pd.concat([self.mapping_df, test_mapping_df], axis=0, ignore_index=True)
+        if self.transform_method == "first":
+            # train の方を優先
+            mapping_df = full_mapping_df.drop_duplicates(subset=on_keys, keep="first")
+        elif self.transform_method == "mean":
+            mapping_df = (
+                pd.concat([self.mapping_df, test_mapping_df], axis=0, ignore_index=True)
+                .groupby(on_keys)
+                .mean()
+                .reset_index()
+            )  # test : train と test の平均をとる
+        else:
+            raise NotImplementedError
+
+        new_df = df[on_keys].merge(mapping_df, how="left", on=on_keys).drop(columns=on_keys)
+        return new_df.reset_index(drop=True)
+
+
 def _q_25(x):  # type: ignore
     return x.quantile(0.25)
 
