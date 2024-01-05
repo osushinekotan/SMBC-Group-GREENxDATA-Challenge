@@ -67,6 +67,61 @@ class AggregatedFeatureExtractor(BaseFeatureExtractor):
         return new_df
 
 
+class AggregatedFeatureExtractorV2(BaseFeatureExtractor):
+    def __init__(
+        self,
+        group_keys: list[str],
+        group_values: list[str],
+        agg_methods: list[str | Callable],
+        transform_method: str,
+        parents: list[BaseFeatureExtractor] | None = None,
+    ):
+        super().__init__(parents)
+        self.parents = parents
+
+        self.group_keys = list(group_keys)
+        self.group_values = list(group_values)
+        self.agg_methods = list(agg_methods)
+        self.transform_method = transform_method
+
+        self.df_agg = None
+
+    def make_agg_df(self, input_df: pd.DataFrame) -> pd.DataFrame:
+        agg_dfs = []
+        for agg_method in self.agg_methods:
+            method_name = agg_method if isinstance(agg_method, str) else agg_method.__name__
+            for col in self.group_values:
+                new_col = f"agg_{method_name}_{col}_grpby_{'_'.join(self.group_keys)}"
+                df_agg = (input_df[self.group_keys + [col]].groupby(self.group_keys)[col].agg(agg_method)).to_frame(
+                    name=new_col
+                )
+                agg_dfs.append(df_agg)
+
+        df_agg = pd.concat(agg_dfs, axis=1).reset_index()
+        return df_agg
+
+    def fit(self, input_df: pd.DataFrame) -> None:  # type: ignore
+        self.df_agg = self.make_agg_df(input_df=input_df)
+
+    def transform(self, input_df: pd.DataFrame) -> pd.DataFrame:  # type: ignore
+        # 集約データフレームを入力データフレームに結合
+        test_agg_df = self.make_agg_df(input_df=input_df)
+        full_agg_df = pd.concat([self.df_agg, test_agg_df], axis=0, ignore_index=True)
+
+        if self.transform_method == "first":
+            # train の方を優先s
+            agg_df = full_agg_df.drop_duplicates(subset=self.group_keys, keep="first")
+        elif self.transform_method == "mean":
+            agg_df = full_agg_df.groupby(self.group_keys).mean().reset_index()  # test : train と test の平均をとる
+        else:
+            raise NotImplementedError
+
+        new_df = input_df[self.group_keys + self.group_values].merge(agg_df, how="left", on=self.group_keys)
+
+        new_df = new_df.drop(columns=self.group_values + self.group_keys)
+        return new_df
+
+
 class RollingAggregatedFeatureExtractor(BaseFeatureExtractor):
     def __init__(
         self,
@@ -173,7 +228,7 @@ class RollingAggregatedFeatureExtractorV2(BaseFeatureExtractor):
         return new_df.reset_index(drop=True)
 
 
-class RollingAggregatedFeatureExtractorV3:
+class RollingAggregatedFeatureExtractorV3(BaseFeatureExtractor):
     def __init__(
         self,
         group_keys: list[str],
@@ -182,7 +237,9 @@ class RollingAggregatedFeatureExtractorV3:
         transform_method: str,
         ts_column: str,
         window: str,
+        parents: list[BaseFeatureExtractor] | None = None,
     ):
+        super().__init__(parents)
         self.group_keys = list(group_keys)
         self.group_values = list(group_values)
         self.agg_methods = list(agg_methods)

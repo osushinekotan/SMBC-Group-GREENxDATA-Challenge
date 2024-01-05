@@ -5,7 +5,7 @@
 
 defaults:
   - override /cv: stratified_kfold
-  - override /cat: "020"
+  - override /cat: "018"
 
 # all parameters below will be merged with parameters from default configurations set above
 # this allows you to overwrite only specified parameters
@@ -21,9 +21,8 @@ align_train_test: false
 replace_rare_values_threshold: 0
 
 cv:
-  n_splits: 10
+  n_splits: 5
 
-# TODO : 樹齢 feature
 feature_extractors:
   - _target_: src.experiment.customs.feature.CreatedAtFeatureExtractorV2
   - _target_: src.experiment.customs.feature.CurbLocationFeatureExtractorV1
@@ -86,43 +85,12 @@ agg_feature_extractors:
       - _target_: src.experiment.customs.feature.UserTypeFeatureExtractorV1
       - _target_: src.experiment.customs.feature.ProblemsFeatureExtractorV1
 
-rolling_agg_feature_extractors:
-  - _target_: src.experiment.feature.tabular.RollingAggregatedFeatureExtractorV3
-    group_keys: null # set in notebook
-    group_values:
-      [
-        tree_dbh,
-        tree_age,
-        num_problems,
-        user_type_rank,
-        is_volunteer,
-        sidewalk_binary,
-        steward_rank,
-        curb_loc_binary,
-        problem_is_Nan,
-      ]
-    agg_methods: ["std", "mean"]
-    ts_column: created_at
-    window: "10D"
-    transform_method: first
-    parents:
-      - _target_: src.experiment.customs.feature.CreatedAtFeatureExtractorV2
-      - _target_: src.experiment.customs.feature.TreeDbhFeatureExtractorV1
-      - _target_: src.experiment.customs.feature.SpcCommonFeatureExtractorV1
-      - _target_: src.experiment.customs.feature.SpcLatinFeatureExtractorV1
-      - _target_: src.experiment.customs.feature.NtaFeatureExtractorV1
-      - _target_: src.experiment.customs.feature.StreetWidthFeatureExtractorV1
-      - _target_: src.experiment.customs.feature.CurbLocationFeatureExtractorV1
-      - _target_: src.experiment.customs.feature.GuardsFeatureExtractorV1
-      - _target_: src.experiment.customs.feature.SidewalkFeatureExtractorV1
-      - _target_: src.experiment.customs.feature.UserTypeFeatureExtractorV1
-      - _target_: src.experiment.customs.feature.ProblemsFeatureExtractorV1
-
 group_keys_for_agg: ${cat.group_keys_for_aggregation}
-group_keys_for_rolling_agg: ${cat.group_keys_for_rolling_agg}
 
 use_cat_features: false
-seed_average_seeds: [71, 51, 91]
+seed_average_seeds: [71, 72, 73]
+
+num_features: 1000 # n_splits=5, seed_average_seeds=[71]
 
 model:
   predict_proba: false
