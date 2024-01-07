@@ -63,7 +63,7 @@ def train_cv_tabular_v1(
 
         # split train and valid
         train_df = df.query(f"fold != {i_fold}").reset_index(drop=True)
-        valid_df = df.query(f"fold == {i_fold}").reset_index(drop=True)
+        valid_df = df.query(f"fold == {i_fold}").query("data == 'train'").reset_index(drop=True)
         tr_x, tr_y = train_df[feature_columns], train_df[target_columns]
         va_x, va_y = valid_df[feature_columns], valid_df[target_columns]
 

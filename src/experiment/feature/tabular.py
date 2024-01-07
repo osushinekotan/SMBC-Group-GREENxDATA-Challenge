@@ -73,7 +73,7 @@ class AggregatedFeatureExtractorV2(BaseFeatureExtractor):
         group_keys: list[str],
         group_values: list[str],
         agg_methods: list[str | Callable],
-        transform_method: str,
+        transform_method: str | None = None,
         parents: list[BaseFeatureExtractor] | None = None,
     ):
         super().__init__(parents)
@@ -105,14 +105,21 @@ class AggregatedFeatureExtractorV2(BaseFeatureExtractor):
 
     def transform(self, input_df: pd.DataFrame) -> pd.DataFrame:  # type: ignore
         # 集約データフレームを入力データフレームに結合
-        test_agg_df = self.make_agg_df(input_df=input_df)
-        full_agg_df = pd.concat([self.df_agg, test_agg_df], axis=0, ignore_index=True)
 
         if self.transform_method == "first":
-            # train の方を優先s
-            agg_df = full_agg_df.drop_duplicates(subset=self.group_keys, keep="first")
+            test_agg_df = self.make_agg_df(input_df=input_df)
+            full_agg_df = pd.concat([self.df_agg, test_agg_df], axis=0).reset_index(drop=True)
+            agg_df = full_agg_df.drop_duplicates(subset=self.group_keys, keep="first").reset_index(drop=True)
+
         elif self.transform_method == "mean":
+            test_agg_df = self.make_agg_df(input_df=input_df)
+            full_agg_df = pd.concat([self.df_agg, test_agg_df], axis=0).reset_index(drop=True)
+
             agg_df = full_agg_df.groupby(self.group_keys).mean().reset_index()  # test : train と test の平均をとる
+
+        elif self.transform_method is None:
+            agg_df = self.df_agg.copy()  # type: ignore
+
         else:
             raise NotImplementedError
 
